@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAP IT | Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lap: {
+              purple: '#3B178F',
+              dark: '#27105F',
+              light: '#EEE9FA',
+              ink: '#050505',
+              muted: '#68636C',
+              line: '#DED9E0'
+            }
+          },
+          fontFamily: {
+            display: ['Barlow Condensed', 'sans-serif'],
+            body: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F5F7;
+      color: #050505;
+    }
+
+    .sidebar-link {
+      color: #050505;
+      font-weight: 400;
+      transition: background .2s ease, color .2s ease;
+    }
+
+    .sidebar-link:hover {
+      background: #EEE9FA;
+      color: #3B178F;
+    }
+
+    .sidebar-link.active {
+      background: #EEE9FA;
+      color: #3B178F;
+      font-weight: 400;
+    }
+
+    .admin-sidebar,
+    .admin-main,
+    .sidebar-text,
+    .sidebar-label,
+    .status-panel,
+    .user-details {
+      transition: all .22s ease;
+    }
+
+    body.sidebar-collapsed .admin-sidebar {
+      width: 116px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    body.sidebar-collapsed .admin-main {
+      padding-left: 116px;
+    }
+
+    body.sidebar-collapsed .sidebar-text,
+    body.sidebar-collapsed .sidebar-label,
+    body.sidebar-collapsed .status-panel,
+    body.sidebar-collapsed .user-details {
+      display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-link {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-user {
+      justify-content: center;
+      border: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    body.sidebar-collapsed .sidebar-logout {
+      display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    body.sidebar-collapsed .sidebar-header {
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    body.sidebar-collapsed .sidebar-logo-box {
+      width: 64px;
+      height: 56px;
+      overflow: visible;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-logo {
+      width: 64px;
+      height: 56px;
+      object-fit: contain;
+      object-position: center;
+      max-width: none;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle {
+      width: 30px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .logout-dialog,
+    .logout-dialog h2,
+    .logout-dialog p,
+    .logout-dialog button {
+      color: #050505;
+    }
+
+    .modal-cancel {
+      background: #ffffff;
+      border: 1px solid #DED9E0;
+      color: #050505;
+    }
+
+    .modal-cancel:hover {
+      background: #EEE9FA;
+    }
+
+    .modal-logout {
+      background: #DC2626;
+      color: #ffffff;
+    }
+
+    .modal-logout:hover {
+      background: #B91C1C;
+    }
+
+    /* Contrast guard: prevent invisible light text on white surfaces. */
+    .bg-white,
+    .bg-white h1,
+    .bg-white h2,
+    .bg-white h3,
+    .bg-white h4,
+    .bg-white p,
+    .bg-white label,
+    .bg-white span,
+    .bg-white strong,
+    .bg-white td,
+    .bg-white th,
+    .bg-white input,
+    .bg-white textarea,
+    .bg-white select,
+    .logout-dialog,
+    .logout-dialog * {
+      color: #050505 !important;
+    }
+
+    .bg-white .text-lap-muted,
+    .bg-white .table-muted,
+    .bg-white [class*="text-lap-muted"],
+    .bg-white input::placeholder,
+    .bg-white textarea::placeholder {
+      color: #68636C !important;
+    }
+
+    .bg-white .text-lap-purple,
+    .bg-white [class*="text-lap-purple"] {
+      color: #3B178F !important;
+    }
+
+    .bg-white .text-emerald-600,
+    .bg-white [class*="text-emerald-600"] {
+      color: #059669 !important;
+    }
+
+    .bg-white .text-blue-600,
+    .bg-white [class*="text-blue-600"] {
+      color: #2563EB !important;
+    }
+
+    .bg-white .text-amber-600,
+    .bg-white [class*="text-amber-600"] {
+      color: #D97706 !important;
+    }
+
+    .bg-white .text-red-600,
+    .bg-white [class*="text-red-600"] {
+      color: #DC2626 !important;
+    }
+
+    button.bg-lap-purple,
+    a.bg-lap-purple,
+    .bg-white button.bg-lap-purple,
+    .bg-white a.bg-lap-purple,
+    .message-submit,
+    .modal-logout,
+    .logout-confirm {
+      color: #FFFFFF !important;
+    }
+
+    button.bg-lap-dark,
+    a.bg-lap-dark,
+    button.bg-red-600,
+    a.bg-red-600 {
+      color: #FFFFFF;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="flex min-h-screen">
+    <aside id="adminSidebar" class="admin-sidebar fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-lap-line bg-white px-5 py-6 shadow-[8px_0_30px_rgba(39,16,95,.04)] max-md:hidden">
+      <div class="sidebar-header flex items-center justify-between gap-3">
+        <a href="index.html" aria-label="LAP IT home">
+          <span class="sidebar-logo-box inline-flex h-16 w-24 items-center justify-start overflow-hidden rounded-2xl bg-transparent">
+            <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="sidebar-logo h-20 w-32 max-w-none object-contain object-left">
+          </span>
+        </a>
+        <button id="toggleSidebar" class="sidebar-toggle inline-flex h-9 w-9 items-center justify-center rounded-xl text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+          <i data-lucide="chevron-left" class="sidebar-toggle-icon h-5 w-5 transition-transform"></i>
+        </button>
+      </div>
+
+      <nav class="mt-6 grid gap-2 text-sm" aria-label="Admin modules">
+        <p class="sidebar-label mb-2 px-2 text-[11px] font-extrabold uppercase tracking-[.18em] text-lap-muted/70">Admin Tools</p>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="billiard-table-timer.html">
+          <i data-lucide="timer" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Billiard Table Timer</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="videoke-room-timer.html">
+          <i data-lucide="mic-2" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Videoke Room Timer</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="cashier-dashboard.html">
+          <i data-lucide="layout-dashboard" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Cashier Dashboard</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="basic-pos.html">
+          <i data-lucide="receipt-text" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Basic POS</span>
+        </a>
+        <a class="sidebar-link active flex items-center gap-3 rounded-xl px-4 py-3.5" href="reports.html">
+          <i data-lucide="bar-chart-3" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </nav>
+
+      <div class="mt-auto border-t border-lap-line pt-5">
+        <div class="sidebar-user flex items-center gap-3 rounded-2xl border border-lap-line bg-white p-3 shadow-sm">
+          <span class="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-lap-line bg-white shadow-sm"><img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-9 w-9 object-contain"></span>
+          <div class="user-details min-w-0">
+            <p class="truncate text-sm font-extrabold text-lap-ink">Admin</p>
+            <p class="mt-1 inline-flex rounded bg-[#E8E6EB] px-2 py-0.5 text-[10px] font-bold text-lap-muted">Admin</p>
+          </div>
+          <button id="logoutButton" class="sidebar-logout ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Logout">
+            <i data-lucide="log-out" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main id="adminMain" class="admin-main min-h-screen flex-1 pl-[260px] max-md:pl-0">
+      <header class="sticky top-0 z-30 hidden border-b border-lap-line bg-white/95 px-5 py-4 backdrop-blur max-md:block">
+        <div class="flex items-center justify-between">
+          <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-12 w-32 object-contain object-left">
+          <button class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-lap-line text-lap-purple transition hover:border-lap-purple hover:bg-lap-light" type="button" aria-label="Open menu">
+            <i data-lucide="menu" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="px-5 py-5 sm:px-7 lg:px-8">
+        <div class="mb-5">
+          <h1 class="text-xl font-extrabold text-lap-ink">Reports</h1>
+          <p id="reportDate" class="mt-1 text-xs text-lap-muted"></p>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <strong id="totalSales" class="block text-xl font-extrabold text-lap-ink">P0.00</strong>
+            <span class="text-xs text-lap-muted">Total Sales</span>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <strong id="completedSessions" class="block text-xl font-extrabold text-lap-ink">0</strong>
+            <span class="text-xs text-lap-muted">Completed Sessions</span>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <strong id="billiardSales" class="block text-xl font-extrabold text-lap-ink">P0.00</strong>
+            <span class="text-xs text-lap-muted">Billiard Sales</span>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <strong id="karaokeSales" class="block text-xl font-extrabold text-lap-ink">P0.00</strong>
+            <span class="text-xs text-lap-muted">Karaoke Sales</span>
+          </article>
+        </div>
+
+        <div class="mt-5 rounded-xl border border-lap-line bg-white p-3 shadow-sm">
+          <div class="flex flex-col gap-3 lg:flex-row">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-lap-muted"></i>
+              <input id="reportSearch" class="h-11 w-full rounded-xl border border-lap-line bg-[#F7F5F7] pl-11 pr-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple focus:bg-white" type="search" placeholder="Search by receipt, table, room, or type...">
+            </div>
+            <select id="typeFilter" class="h-11 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-semibold text-lap-ink outline-none transition hover:border-lap-purple focus:border-lap-purple">
+              <option value="all">All Transactions</option>
+              <option value="billiard">Billiard</option>
+              <option value="karaoke">Karaoke</option>
+              <option value="pos">POS</option>
+            </select>
+            <input id="dateFilter" class="h-11 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-semibold text-lap-ink outline-none transition hover:border-lap-purple focus:border-lap-purple" type="date" aria-label="Filter reports by date">
+            <button id="clearDateFilter" class="h-11 rounded-xl border border-lap-line bg-white px-4 text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100 hover:text-lap-ink" type="button">Today's Reports</button>
+          </div>
+        </div>
+
+        <div class="mt-5 overflow-hidden rounded-xl border border-lap-line bg-white shadow-sm">
+          <div class="max-h-[460px] overflow-auto">
+            <table class="w-full min-w-[900px] text-left text-sm">
+              <thead class="sticky top-0 z-10 bg-[#F7F5F7] text-xs uppercase tracking-[.12em] text-lap-muted">
+                <tr>
+                  <th class="px-5 py-4">Receipt</th>
+                  <th class="px-5 py-4">Station</th>
+                  <th class="px-5 py-4">Type</th>
+                  <th class="px-5 py-4">Date / Time</th>
+                  <th class="px-5 py-4">Hours Usage</th>
+                  <th class="px-5 py-4">Total</th>
+                  <th class="px-5 py-4">Status</th>
+                  <th class="px-5 py-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="reportRows" class="divide-y divide-lap-line"></tbody>
+            </table>
+          </div>
+          <div id="emptyReports" class="hidden px-5 py-14 text-center">
+            <i data-lucide="receipt-text" class="mx-auto h-10 w-10 text-lap-muted"></i>
+            <h2 class="mt-4 text-lg font-extrabold text-lap-ink">No settled bills yet</h2>
+            <p class="mt-2 text-sm text-lap-muted">Generated bills from the Cashier Dashboard will appear here after you proceed.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="receiptModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <h2 id="receiptTitle" class="text-xl font-extrabold text-lap-ink">Review Bill</h2>
+      <div id="receiptContent" class="mt-4 max-h-[62vh] overflow-y-auto rounded-xl border border-lap-line bg-white p-4 text-sm"></div>
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <button id="closeReceipt" class="inline-flex h-11 items-center justify-center rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100 hover:text-lap-ink" type="button">Cancel</button>
+          <button id="printReceipt" class="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 text-sm font-bold text-white transition hover:bg-emerald-700" type="button">Print Receipt</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="printSuccessModal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="printSuccessTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+        <i data-lucide="check" class="h-7 w-7"></i>
+      </span>
+      <h2 id="printSuccessTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Receipt Printed</h2>
+      <p id="printSuccessMessage" class="mt-3 text-sm leading-6 text-lap-muted">The receipt PDF has been downloaded successfully.</p>
+      <button id="closePrintSuccess" class="mt-6 h-11 w-full rounded-xl border border-emerald-500/30 bg-emerald-50 text-sm font-bold text-lap-ink transition hover:border-emerald-600 hover:bg-emerald-600 hover:text-white" type="button">Done</button>
+    </div>
+  </div>
+
+  <div id="logoutModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+    <div class="logout-dialog w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+        <i data-lucide="log-out" class="h-7 w-7"></i>
+      </span>
+      <h2 id="logoutTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Confirm Logout</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Are you sure you want to logout from the admin dashboard?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelLogout" class="modal-cancel h-11 rounded-xl text-sm font-bold transition" type="button">Cancel</button>
+        <a class="modal-logout inline-flex h-11 items-center justify-center rounded-xl text-sm font-bold transition" href="index.html">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const toggleSidebar = document.getElementById('toggleSidebar');
+    const logoutButton = document.getElementById('logoutButton');
+    const logoutModal = document.getElementById('logoutModal');
+    const cancelLogout = document.getElementById('cancelLogout');
+    const BILLS_KEY = 'lapit_cashier_bills';
+    const reportDate = document.getElementById('reportDate');
+    const totalSales = document.getElementById('totalSales');
+    const completedSessions = document.getElementById('completedSessions');
+    const billiardSales = document.getElementById('billiardSales');
+    const karaokeSales = document.getElementById('karaokeSales');
+    const reportSearch = document.getElementById('reportSearch');
+    const typeFilter = document.getElementById('typeFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const clearDateFilter = document.getElementById('clearDateFilter');
+    const reportRows = document.getElementById('reportRows');
+    const emptyReports = document.getElementById('emptyReports');
+    const receiptModal = document.getElementById('receiptModal');
+    const closeReceipt = document.getElementById('closeReceipt');
+    const printReceipt = document.getElementById('printReceipt');
+    const receiptContent = document.getElementById('receiptContent');
+    const printSuccessModal = document.getElementById('printSuccessModal');
+    const closePrintSuccess = document.getElementById('closePrintSuccess');
+    const printSuccessMessage = document.getElementById('printSuccessMessage');
+
+    let bills = [];
+    let activeReceiptBill = null;
+
+    toggleSidebar.addEventListener('click', () => {
+      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      toggleSidebar.setAttribute('aria-expanded', String(!isCollapsed));
+    });
+
+    logoutButton.addEventListener('click', () => {
+      logoutModal.classList.remove('hidden');
+      logoutModal.classList.add('flex');
+    });
+
+    cancelLogout.addEventListener('click', () => {
+      logoutModal.classList.add('hidden');
+      logoutModal.classList.remove('flex');
+    });
+
+    logoutModal.addEventListener('click', (event) => {
+      if (event.target === logoutModal) {
+        logoutModal.classList.add('hidden');
+        logoutModal.classList.remove('flex');
+      }
+    });
+
+    const loadBills = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(BILLS_KEY) || '[]');
+        return Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+
+    const formatMoney = (value) => `P${Number(value || 0).toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+
+    const formatHours = (hours) => {
+      const value = Number(hours || 0);
+      return `${value.toLocaleString('en-PH', { maximumFractionDigits: 2 })} ${value === 1 ? 'hr' : 'hrs'}`;
+    };
+
+    const formatDateTime = (value) => {
+      if (!value) return 'Not recorded';
+      return new Intl.DateTimeFormat('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      }).format(new Date(value));
+    };
+
+    const formatMilitaryTime = (value) => {
+      if (!value) return '--:--';
+      return new Intl.DateTimeFormat('en-PH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(new Date(value));
+    };
+
+    const getDateKey = (value) => {
+      if (!value) return '';
+      const parts = new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date(value));
+      const year = parts.find((part) => part.type === 'year')?.value || '';
+      const month = parts.find((part) => part.type === 'month')?.value || '';
+      const day = parts.find((part) => part.type === 'day')?.value || '';
+      return `${year}-${month}-${day}`;
+    };
+
+    const updateReportDateLabel = () => {
+      if (!dateFilter.value) {
+        reportDate.textContent = 'Showing today\'s settled transactions';
+        return;
+      }
+
+      const selectedDate = new Date(`${dateFilter.value}T00:00:00`);
+      reportDate.textContent = `Showing reports for ${new Intl.DateTimeFormat('en-PH', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(selectedDate)}`;
+    };
+
+    const getBillStatus = (bill) => ['Settled', 'Completed'].includes(bill.status) ? bill.status : 'Settled';
+    const getExtendedHours = (bill) => (bill.extensions || []).reduce((sum, item) => sum + Number(item.hours || 0), 0);
+    const getExtensionAmount = (bill) => (bill.extensions || []).reduce((sum, item) => sum + Number(item.amount || (Number(item.hours || 0) * Number(bill.rate || 0))), 0);
+    const getAdjustmentTotal = (bill) => (bill.adjustments || []).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const getBillTotal = (bill) => Number(bill.total ?? ((Number(bill.sessionCharges || 0) + getExtensionAmount(bill)) - getAdjustmentTotal(bill)));
+    const getReceiptNumber = (bill) => {
+      const createdAt = Number(bill.createdAt || bill.endedAt || Date.now());
+      const shortId = String(bill.id || createdAt).replace(/\D/g, '').slice(-4).padStart(4, '0');
+      const prefix = bill.sourceType === 'karaoke' ? 'KR' : bill.sourceType === 'pos' ? 'POS' : 'BT';
+      return `${prefix}-${shortId}`;
+    };
+
+    const getFilteredBills = () => {
+      const query = reportSearch.value.trim().toLowerCase();
+      const type = typeFilter.value;
+      const selectedDate = dateFilter.value;
+
+      return bills.filter((bill) => {
+        const sourceType = String(bill.sourceType || '').toLowerCase();
+        const matchesType = type === 'all' || sourceType === type;
+        const matchesDate = !selectedDate || getDateKey(bill.createdAt || bill.endedAt) === selectedDate;
+        const searchable = [
+          bill.id,
+          getReceiptNumber(bill),
+          bill.name,
+          bill.sourceType,
+          getBillStatus(bill),
+          formatDateTime(bill.createdAt || bill.endedAt)
+        ].join(' ').toLowerCase();
+        return matchesType && matchesDate && (!query || searchable.includes(query));
+      });
+    };
+
+    const renderStats = (statsBills = bills) => {
+      const total = statsBills.reduce((sum, bill) => sum + getBillTotal(bill), 0);
+      const billiard = statsBills.filter((bill) => bill.sourceType === 'billiard').reduce((sum, bill) => sum + getBillTotal(bill), 0);
+      const karaoke = statsBills.filter((bill) => bill.sourceType === 'karaoke').reduce((sum, bill) => sum + getBillTotal(bill), 0);
+
+      totalSales.textContent = formatMoney(total);
+      completedSessions.textContent = statsBills.length;
+      billiardSales.textContent = formatMoney(billiard);
+      karaokeSales.textContent = formatMoney(karaoke);
+    };
+
+    const renderRows = () => {
+      const visibleBills = getFilteredBills();
+      reportRows.innerHTML = '';
+      emptyReports.classList.toggle('hidden', visibleBills.length > 0);
+      renderStats(visibleBills);
+      updateReportDateLabel();
+
+      visibleBills.forEach((bill) => {
+        const row = document.createElement('tr');
+        const receiptNumber = getReceiptNumber(bill);
+        const typeLabel = bill.sourceType === 'karaoke' ? 'Karaoke' : bill.sourceType === 'pos' ? 'POS' : 'Billiard';
+        const hours = bill.sourceType === 'pos' ? '--' : formatHours(Number(bill.hours || 0) + getExtendedHours(bill));
+
+        row.className = 'transition hover:bg-lap-light/70';
+        row.innerHTML = `
+          <td class="px-5 py-4 font-bold text-lap-ink">${escapeHtml(receiptNumber)}</td>
+          <td class="px-5 py-4 font-semibold text-lap-ink">${escapeHtml(bill.name || 'Session')}</td>
+          <td class="px-5 py-4"><span class="rounded-full bg-lap-light px-3 py-1 text-xs font-bold text-lap-purple">${typeLabel}</span></td>
+          <td class="px-5 py-4 text-lap-muted">${formatDateTime(bill.createdAt || bill.endedAt)}</td>
+          <td class="px-5 py-4 font-semibold text-lap-ink">${hours}</td>
+          <td class="px-5 py-4 font-extrabold text-lap-purple">${formatMoney(getBillTotal(bill))}</td>
+          <td class="px-5 py-4"><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">${getBillStatus(bill)}</span></td>
+          <td class="px-5 py-4 text-right">
+            <button class="show-receipt inline-flex h-10 items-center justify-center rounded-xl border border-lap-line bg-white px-4 text-xs font-extrabold text-lap-ink transition hover:border-lap-purple hover:bg-lap-purple hover:text-white" type="button" data-id="${escapeHtml(bill.id)}">Show Receipt</button>
+          </td>
+        `;
+        reportRows.appendChild(row);
+      });
+
+      lucide.createIcons();
+    };
+
+    const renderReports = () => {
+      bills = loadBills().sort((a, b) => Number(b.createdAt || b.endedAt || 0) - Number(a.createdAt || a.endedAt || 0));
+      dateFilter.value = getDateKey(Date.now());
+      renderStats();
+      renderRows();
+    };
+
+    const renderReceipt = (bill) => {
+      activeReceiptBill = bill;
+      if (bill.sourceType === 'pos') {
+        const items = bill.items || [];
+        const itemRows = items.length
+          ? items.map((item) => `
+            <div class="flex justify-between gap-3 py-1">
+              <span class="text-lap-muted">${escapeHtml(item.name)} x${Number(item.quantity || 0)}<br><small>${formatMoney(item.price)} each</small></span>
+              <strong>${formatMoney(item.amount)}</strong>
+            </div>
+          `).join('')
+          : '<p class="py-1 text-xs text-lap-muted">No order items recorded.</p>';
+
+        receiptContent.innerHTML = `
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-base font-extrabold text-lap-ink">Order Receipt</h3>
+              <p class="mt-1 text-xs text-lap-muted">${escapeHtml(getReceiptNumber(bill))} &middot; Basic POS</p>
+            </div>
+            <p class="text-right text-[11px] font-semibold text-lap-muted">${escapeHtml(formatDateTime(bill.createdAt || bill.endedAt))}</p>
+          </div>
+
+          <div class="mt-3 border-y border-dashed border-lap-line py-2 text-xs">
+            <div class="flex justify-between gap-4 py-0.5">
+              <span class="text-lap-muted">Items</span>
+              <strong class="text-lap-ink">${items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)}</strong>
+            </div>
+          </div>
+
+          <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+            <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Order Items</strong>
+            <div class="mt-1">${itemRows}</div>
+          </div>
+
+          <div class="mt-3 flex justify-between gap-4 border-t border-lap-line pt-3 text-lg">
+            <span class="font-extrabold text-lap-ink">Amount Due</span>
+            <strong class="text-lap-purple">${formatMoney(getBillTotal(bill))}</strong>
+          </div>
+        `;
+
+        receiptModal.classList.remove('hidden');
+        receiptModal.classList.add('flex');
+        return;
+      }
+
+      const extensions = bill.extensions || [];
+      const adjustments = bill.adjustments || [];
+      const extendedHours = extensions.reduce((total, extension) => total + Number(extension.hours || 0), 0);
+      const baseHours = Math.max(0, Number(bill.hours || 0) - extendedHours);
+      const computedTotalCharge = Number(bill.rate || 0) * (baseHours + extendedHours);
+      const computedAmountDue = Math.max(0, computedTotalCharge - adjustments.reduce((total, adjustment) => total + Number(adjustment.amount || 0), 0));
+      const extensionRows = extensions.length
+        ? extensions.map((extension) => `
+            <div class="flex justify-between gap-3 py-1">
+              <span class="text-lap-muted">${escapeHtml(formatMilitaryTime(extension.extendedAt))} - ${formatHours(extension.hours)}</span>
+              <strong>${formatMoney(extension.amount)}</strong>
+            </div>
+        `).join('')
+        : '<p class="py-1 text-xs text-lap-muted">No extended time.</p>';
+
+      const adjustmentRows = adjustments.length
+        ? adjustments.map((adjustment) => `
+          <div class="flex justify-between gap-3 py-1">
+            <span class="capitalize text-lap-muted">${escapeHtml(adjustment.type || 'Adjustment')}<br><small>${escapeHtml(adjustment.reason || 'No reason')}</small></span>
+            <strong class="text-red-600">-${formatMoney(adjustment.amount)}</strong>
+          </div>
+        `).join('')
+        : '<p class="py-1 text-xs text-lap-muted">No manual adjustments.</p>';
+
+      receiptContent.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-base font-extrabold text-lap-ink">Session Receipt</h3>
+            <p class="mt-1 text-xs text-lap-muted">${escapeHtml(getReceiptNumber(bill))} &middot; ${escapeHtml(bill.name || 'Session')} &middot; ${escapeHtml(bill.sourceType === 'billiard' ? 'Billiard' : 'Karaoke')}</p>
+          </div>
+          <p class="text-right text-[11px] font-semibold text-lap-muted">${escapeHtml(formatDateTime(bill.createdAt || bill.endedAt))}</p>
+        </div>
+
+        <div class="mt-3 border-y border-dashed border-lap-line py-2 text-xs">
+          <div class="flex justify-between gap-4 py-0.5">
+            <span class="text-lap-muted">Time Started</span>
+            <strong class="text-lap-ink">${escapeHtml(formatDateTime(bill.startedAt))}</strong>
+          </div>
+        </div>
+
+        <div class="mt-2 text-xs">
+          <div class="flex justify-between gap-4 py-1">
+            <span class="text-lap-muted">Rate</span>
+            <strong>${formatMoney(bill.rate)}/hr</strong>
+          </div>
+          <div class="flex justify-between gap-4 py-1">
+            <span class="text-lap-muted">Hours Availed</span>
+            <strong>${formatHours(baseHours)}</strong>
+          </div>
+        </div>
+
+        <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Extended Time</strong>
+          <div class="space-y-2">${extensionRows}</div>
+        </div>
+
+        <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Total Bill Charge</strong>
+          <div class="mt-1 flex justify-between gap-4 py-1">
+            <span class="text-lap-muted">Time Availed ${formatHours(baseHours)} (${formatMoney(bill.rate)}/hr)</span>
+            <strong>${formatMoney(Number(bill.rate || 0) * baseHours)}</strong>
+          </div>
+          <div class="flex justify-between gap-4 py-1">
+            <span class="text-lap-muted">Time Extended ${formatHours(extendedHours)} (${formatMoney(bill.rate)}/hr)</span>
+            <strong>${formatMoney(Number(bill.rate || 0) * extendedHours)}</strong>
+          </div>
+          <div class="mt-1 flex justify-between gap-4 border-t border-dashed border-lap-line pt-2">
+            <span class="font-bold text-lap-ink">Total</span>
+            <strong>${formatMoney(computedTotalCharge)}</strong>
+            </div>
+        </div>
+
+        <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Adjustments</strong>
+          <div>${adjustmentRows}</div>
+        </div>
+
+        <div class="mt-3 flex justify-between gap-4 border-t border-lap-line pt-3 text-lg">
+          <span class="font-extrabold text-lap-ink">Amount Due</span>
+          <strong class="text-lap-purple">${formatMoney(computedAmountDue)}</strong>
+        </div>
+      `;
+
+      receiptModal.classList.remove('hidden');
+      receiptModal.classList.add('flex');
+    };
+
+    const closeReceiptModal = () => {
+      receiptModal.classList.add('hidden');
+      receiptModal.classList.remove('flex');
+      activeReceiptBill = null;
+    };
+
+    const addPdfLine = (doc, label, value, y, options = {}) => {
+      doc.setFont('helvetica', options.bold ? 'bold' : 'normal');
+      doc.text(label, 18, y);
+      doc.setFont('helvetica', 'bold');
+      doc.text(value, 192, y, { align: 'right' });
+      return y + 8;
+    };
+
+    const downloadReceiptPdf = (bill) => {
+      if (!window.jspdf?.jsPDF) {
+        alert('PDF generator is still loading. Please try again in a moment.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const rate = Number(bill.rate || 0);
+      const extensions = bill.extensions || [];
+      const adjustments = bill.adjustments || [];
+      const extendedHours = getExtendedHours(bill);
+      const baseHours = Math.max(0, Number(bill.hours || 0) - extendedHours);
+      const availedAmount = rate * baseHours;
+      const extendedAmount = rate * extendedHours;
+      const totalCharge = availedAmount + extendedAmount;
+      const amountDue = Math.max(0, totalCharge - getAdjustmentTotal(bill));
+      const receiptNumber = getReceiptNumber(bill);
+      let y = 18;
+
+      doc.setFillColor(59, 23, 143);
+      doc.rect(0, 0, 210, 28, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text('LAP I.T. Solutions', 18, 17);
+      doc.setFontSize(9);
+      doc.text('Session Receipt', 192, 17, { align: 'right' });
+
+      y = 42;
+      doc.setTextColor(5, 5, 5);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Receipt Details', 18, y);
+      y += 10;
+
+      doc.setFontSize(10);
+      y = addPdfLine(doc, 'Receipt No.', receiptNumber, y);
+      y = addPdfLine(doc, 'Generated', formatDateTime(bill.createdAt || bill.endedAt), y);
+
+      if (bill.sourceType === 'pos') {
+        const items = bill.items || [];
+        y = addPdfLine(doc, 'Type', 'Basic POS', y);
+        y = addPdfLine(doc, 'Items', String(items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)), y);
+        y += 4;
+        doc.setDrawColor(222, 217, 224);
+        doc.line(18, y, 192, y);
+        y += 9;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('Order Items', 18, y);
+        y += 8;
+        doc.setFontSize(10);
+        if (items.length) {
+          items.forEach((item) => {
+            y = addPdfLine(doc, `${item.name} x${item.quantity}`, formatMoney(item.amount), y);
+          });
+        } else {
+          doc.setFont('helvetica', 'normal');
+          doc.text('No order items recorded.', 18, y);
+          y += 8;
+        }
+
+        y += 6;
+        doc.setFillColor(238, 233, 250);
+        doc.roundedRect(18, y, 174, 18, 3, 3, 'F');
+        doc.setTextColor(59, 23, 143);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text('Amount Due', 24, y + 12);
+        doc.text(formatMoney(getBillTotal(bill)), 186, y + 12, { align: 'right' });
+        doc.save(`lap-it-receipt-${receiptNumber.toLowerCase()}.pdf`);
+        printSuccessMessage.textContent = `${receiptNumber} has been downloaded successfully.`;
+        printSuccessModal.classList.remove('hidden');
+        printSuccessModal.classList.add('flex');
+        lucide.createIcons();
+        return;
+      }
+
+      const typeLabel = bill.sourceType === 'karaoke' ? 'Karaoke Room' : 'Billiard Table';
+      y = addPdfLine(doc, 'Station', `${bill.name || 'Session'} - ${typeLabel}`, y);
+      y = addPdfLine(doc, 'Time Started', formatDateTime(bill.startedAt), y);
+      y = addPdfLine(doc, 'Rate', `${formatMoney(rate)}/hr`, y);
+
+      y += 4;
+      doc.setDrawColor(222, 217, 224);
+      doc.line(18, y, 192, y);
+      y += 9;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Total Bill Charge', 18, y);
+      y += 8;
+      doc.setFontSize(10);
+      y = addPdfLine(doc, `Time Availed ${formatHours(baseHours)} (${formatMoney(rate)}/hr)`, formatMoney(availedAmount), y);
+      y = addPdfLine(doc, `Time Extended ${formatHours(extendedHours)} (${formatMoney(rate)}/hr)`, formatMoney(extendedAmount), y);
+      y = addPdfLine(doc, 'Total', formatMoney(totalCharge), y, { bold: true });
+
+      y += 3;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Extended Time', 18, y);
+      y += 8;
+      doc.setFontSize(10);
+      if (extensions.length) {
+        extensions.forEach((extension) => {
+          y = addPdfLine(doc, `${formatMilitaryTime(extension.extendedAt)} - ${formatHours(extension.hours)}`, formatMoney(extension.amount || (Number(extension.hours || 0) * rate)), y);
+        });
+      } else {
+        doc.setFont('helvetica', 'normal');
+        doc.text('No extended time.', 18, y);
+        y += 8;
+      }
+
+      y += 3;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Adjustments', 18, y);
+      y += 8;
+      doc.setFontSize(10);
+      if (adjustments.length) {
+        adjustments.forEach((adjustment) => {
+          const label = `${adjustment.type || 'Adjustment'} - ${adjustment.reason || 'No reason'}`;
+          y = addPdfLine(doc, label, `-${formatMoney(adjustment.amount)}`, y);
+        });
+      } else {
+        doc.setFont('helvetica', 'normal');
+        doc.text('No manual adjustments.', 18, y);
+        y += 8;
+      }
+
+      y += 6;
+      doc.setFillColor(238, 233, 250);
+      doc.roundedRect(18, y, 174, 18, 3, 3, 'F');
+      doc.setTextColor(59, 23, 143);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text('Amount Due', 24, y + 12);
+      doc.text(formatMoney(amountDue), 186, y + 12, { align: 'right' });
+
+      const filename = `lap-it-receipt-${receiptNumber.toLowerCase()}.pdf`;
+      doc.save(filename);
+      printSuccessMessage.textContent = `${receiptNumber} has been downloaded successfully.`;
+      printSuccessModal.classList.remove('hidden');
+      printSuccessModal.classList.add('flex');
+      lucide.createIcons();
+    };
+
+    reportRows.addEventListener('click', (event) => {
+      const button = event.target.closest('.show-receipt');
+      if (!button) return;
+
+      const bill = bills.find((item) => item.id === button.dataset.id);
+      if (bill) renderReceipt(bill);
+    });
+
+    reportSearch.addEventListener('input', renderRows);
+    typeFilter.addEventListener('change', renderRows);
+    dateFilter.addEventListener('change', renderRows);
+    clearDateFilter.addEventListener('click', () => {
+      dateFilter.value = getDateKey(Date.now());
+      renderRows();
+    });
+
+    closeReceipt.addEventListener('click', closeReceiptModal);
+
+    printReceipt.addEventListener('click', () => {
+      if (activeReceiptBill) downloadReceiptPdf(activeReceiptBill);
+    });
+
+    closePrintSuccess.addEventListener('click', () => {
+      printSuccessModal.classList.add('hidden');
+      printSuccessModal.classList.remove('flex');
+      closeReceiptModal();
+    });
+
+    printSuccessModal.addEventListener('click', (event) => {
+      if (event.target === printSuccessModal) {
+        printSuccessModal.classList.add('hidden');
+        printSuccessModal.classList.remove('flex');
+      }
+    });
+
+    receiptModal.addEventListener('click', (event) => {
+      if (event.target === receiptModal) {
+        closeReceiptModal();
+      }
+    });
+
+    renderReports();
+  </script>
+</body>
+</html>

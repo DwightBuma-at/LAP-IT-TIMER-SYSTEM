@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAP IT | Basic POS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lap: {
+              purple: '#3B178F',
+              dark: '#27105F',
+              light: '#EEE9FA',
+              ink: '#050505',
+              muted: '#68636C',
+              line: '#DED9E0'
+            }
+          },
+          fontFamily: {
+            display: ['Barlow Condensed', 'sans-serif'],
+            body: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F5F7;
+      color: #050505;
+    }
+
+    .sidebar-link {
+      color: #050505;
+      font-weight: 400;
+      transition: background .2s ease, color .2s ease;
+    }
+
+    .sidebar-link:hover {
+      background: #EEE9FA;
+      color: #3B178F;
+    }
+
+    .sidebar-link.active {
+      background: #EEE9FA;
+      color: #3B178F;
+      font-weight: 400;
+    }
+
+    .admin-sidebar,
+    .admin-main,
+    .sidebar-text,
+    .sidebar-label,
+    .status-panel,
+    .user-details {
+      transition: all .22s ease;
+    }
+
+    body.sidebar-collapsed .admin-sidebar {
+      width: 116px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    body.sidebar-collapsed .admin-main {
+      padding-left: 116px;
+    }
+
+    body.sidebar-collapsed .sidebar-text,
+    body.sidebar-collapsed .sidebar-label,
+    body.sidebar-collapsed .status-panel,
+    body.sidebar-collapsed .user-details {
+      display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-link {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-user {
+      justify-content: center;
+      border: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    body.sidebar-collapsed .sidebar-logout {
+      display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    body.sidebar-collapsed .sidebar-header {
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    body.sidebar-collapsed .sidebar-logo-box {
+      width: 64px;
+      height: 56px;
+      overflow: visible;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-logo {
+      width: 64px;
+      height: 56px;
+      object-fit: contain;
+      object-position: center;
+      max-width: none;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle {
+      width: 30px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .logout-dialog,
+    .logout-dialog h2,
+    .logout-dialog p,
+    .logout-dialog button {
+      color: #050505;
+    }
+
+    .modal-cancel {
+      background: #ffffff;
+      border: 1px solid #DED9E0;
+      color: #050505;
+    }
+
+    .modal-cancel:hover {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+    }
+
+    .modal-logout {
+      background: #DC2626;
+      color: #ffffff;
+    }
+
+    .modal-logout:hover {
+      background: #B91C1C;
+    }
+
+    .pos-primary-btn,
+    .bg-white .pos-primary-btn,
+    .pos-primary-btn *,
+    .bg-white .pos-primary-btn * {
+      background: #0F766E;
+      color: #FFFFFF !important;
+    }
+
+    .pos-primary-btn:hover,
+    .bg-white .pos-primary-btn:hover {
+      background: #E2E8F0;
+      color: #050505 !important;
+    }
+
+    .pos-accent {
+      color: #0F766E !important;
+    }
+
+    .pos-icon-box {
+      background: #ECFDF5;
+      color: #0F766E !important;
+    }
+
+    /* Contrast guard: prevent invisible light text on white surfaces. */
+    .bg-white,
+    .bg-white h1,
+    .bg-white h2,
+    .bg-white h3,
+    .bg-white h4,
+    .bg-white p,
+    .bg-white label,
+    .bg-white span,
+    .bg-white strong,
+    .bg-white td,
+    .bg-white th,
+    .bg-white input,
+    .bg-white textarea,
+    .bg-white select,
+    .logout-dialog,
+    .logout-dialog * {
+      color: #050505 !important;
+    }
+
+    .bg-white .text-lap-muted,
+    .bg-white .table-muted,
+    .bg-white [class*="text-lap-muted"],
+    .bg-white input::placeholder,
+    .bg-white textarea::placeholder {
+      color: #68636C !important;
+    }
+
+    .bg-white .text-lap-purple,
+    .bg-white [class*="text-lap-purple"] {
+      color: #3B178F !important;
+    }
+
+    .bg-white .text-emerald-600,
+    .bg-white [class*="text-emerald-600"] {
+      color: #059669 !important;
+    }
+
+    .bg-white .text-blue-600,
+    .bg-white [class*="text-blue-600"] {
+      color: #2563EB !important;
+    }
+
+    .bg-white .text-amber-600,
+    .bg-white [class*="text-amber-600"] {
+      color: #D97706 !important;
+    }
+
+    .bg-white .text-red-600,
+    .bg-white [class*="text-red-600"] {
+      color: #DC2626 !important;
+    }
+
+    button.bg-lap-purple,
+    a.bg-lap-purple,
+    .bg-white button.bg-lap-purple,
+    .bg-white a.bg-lap-purple,
+    .message-submit,
+    .modal-logout,
+    .logout-confirm {
+      color: #FFFFFF !important;
+    }
+
+    button.bg-lap-dark,
+    a.bg-lap-dark,
+    button.bg-red-600,
+    a.bg-red-600 {
+      color: #FFFFFF;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="flex min-h-screen">
+    <aside id="adminSidebar" class="admin-sidebar fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-lap-line bg-white px-5 py-6 shadow-[8px_0_30px_rgba(39,16,95,.04)] max-md:hidden">
+      <div class="sidebar-header flex items-center justify-between gap-3">
+        <a href="index.html" aria-label="LAP IT home">
+          <span class="sidebar-logo-box inline-flex h-16 w-24 items-center justify-start overflow-hidden rounded-2xl bg-transparent">
+            <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="sidebar-logo h-20 w-32 max-w-none object-contain object-left">
+          </span>
+        </a>
+        <button id="toggleSidebar" class="sidebar-toggle inline-flex h-9 w-9 items-center justify-center rounded-xl text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+          <i data-lucide="chevron-left" class="sidebar-toggle-icon h-5 w-5 transition-transform"></i>
+        </button>
+      </div>
+
+      <nav class="mt-6 grid gap-2 text-sm" aria-label="Admin modules">
+        <p class="sidebar-label mb-2 px-2 text-[11px] font-extrabold uppercase tracking-[.18em] text-lap-muted/70">Admin Tools</p>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="billiard-table-timer.html">
+          <i data-lucide="timer" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Billiard Table Timer</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="videoke-room-timer.html">
+          <i data-lucide="mic-2" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Videoke Room Timer</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="cashier-dashboard.html">
+          <i data-lucide="layout-dashboard" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Cashier Dashboard</span>
+        </a>
+        <a class="sidebar-link active flex items-center gap-3 rounded-xl px-4 py-3.5" href="basic-pos.html">
+          <i data-lucide="receipt-text" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Basic POS</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="reports.html">
+          <i data-lucide="bar-chart-3" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </nav>
+
+      <div class="mt-auto border-t border-lap-line pt-5">
+        <div class="sidebar-user flex items-center gap-3 rounded-2xl border border-lap-line bg-white p-3 shadow-sm">
+          <span class="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-lap-line bg-white shadow-sm"><img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-9 w-9 object-contain"></span>
+          <div class="user-details min-w-0">
+            <p class="truncate text-sm font-extrabold text-lap-ink">Admin</p>
+            <p class="mt-1 inline-flex rounded bg-[#E8E6EB] px-2 py-0.5 text-[10px] font-bold text-lap-muted">Admin</p>
+          </div>
+          <button id="logoutButton" class="sidebar-logout ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Logout">
+            <i data-lucide="log-out" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main id="adminMain" class="admin-main min-h-screen flex-1 pl-[260px] max-md:pl-0">
+      <header class="sticky top-0 z-30 hidden border-b border-lap-line bg-white/95 px-5 py-4 backdrop-blur max-md:block">
+        <div class="flex items-center justify-between">
+          <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-12 w-32 object-contain object-left">
+          <button class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-lap-line text-lap-purple transition hover:border-lap-purple hover:bg-lap-light" type="button" aria-label="Open menu">
+            <i data-lucide="menu" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="px-5 py-5 sm:px-7 lg:px-8">
+        <div class="mb-5">
+          <div>
+            <h1 class="text-xl font-extrabold text-lap-ink">Basic POS</h1>
+            <p id="posDate" class="mt-1 text-xs text-lap-muted"></p>
+          </div>
+        </div>
+
+        <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div class="min-w-0">
+            <div class="rounded-xl border border-lap-line bg-white p-3 shadow-sm">
+              <div class="flex flex-col gap-3 sm:flex-row">
+                <label class="flex h-11 flex-1 items-center gap-3 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-lap-muted">
+                  <i data-lucide="search" class="h-4 w-4"></i>
+                  <input id="productSearch" class="w-full bg-transparent text-sm font-semibold text-lap-ink outline-none placeholder:text-lap-muted/60" type="search" placeholder="Search food, drinks, or services...">
+                </label>
+                <button id="addProductButton" class="pos-primary-btn inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition" type="button">
+                  <i data-lucide="plus" class="h-4 w-4"></i>
+                  Add Product
+                </button>
+                <button id="manageProductsButton" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-lap-line bg-white px-5 text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">
+                  <i data-lucide="pencil" class="h-4 w-4"></i>
+                  Edit Product
+                </button>
+              </div>
+            </div>
+            <div class="mt-5 overflow-hidden rounded-xl border border-lap-line bg-white shadow-sm">
+              <div class="max-h-[calc(100vh-260px)] min-h-[420px] overflow-auto max-lg:max-h-[560px] max-sm:min-h-[300px]">
+                <table class="w-full min-w-[620px] text-left text-sm">
+                  <thead class="sticky top-0 z-10 bg-[#F7F5F7] text-xs uppercase tracking-[.12em] text-lap-muted">
+                    <tr>
+                  <th class="px-4 py-4 sm:px-5">Product Name</th>
+                  <th class="px-4 py-4 sm:px-5">Product Price</th>
+                  <th class="px-4 py-4 text-right sm:px-5">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="productGrid" class="divide-y divide-lap-line"></tbody>
+                </table>
+              </div>
+            </div>
+            <div id="emptyProducts" class="mt-5 hidden rounded-xl border border-dashed border-lap-line bg-white px-5 py-12 text-center shadow-sm">
+              <i data-lucide="package-plus" class="mx-auto h-10 w-10 text-lap-muted"></i>
+              <h2 class="mt-4 text-lg font-extrabold text-lap-ink">No products yet</h2>
+              <p class="mt-2 text-sm text-lap-muted">Add a product to show it in the POS list.</p>
+            </div>
+          </div>
+
+          <aside class="flex h-[calc(100vh-150px)] min-h-[620px] flex-col rounded-xl border border-lap-line bg-white p-5 shadow-sm max-lg:h-[560px] max-lg:min-h-0 max-sm:h-[460px] xl:sticky xl:top-5">
+            <h2 class="text-sm font-extrabold text-lap-ink">Current Order</h2>
+            <div id="orderItems" class="mt-4 grid min-h-0 flex-1 content-start gap-2 overflow-y-auto pr-1 text-sm">
+              <p class="text-sm text-lap-muted">No items added yet.</p>
+            </div>
+            <div class="mt-auto border-t border-lap-line pt-4">
+              <div class="flex justify-between text-lg">
+                <span class="font-extrabold">Total</span>
+                <strong id="orderTotal" class="pos-accent">P0.00</strong>
+              </div>
+              <button id="processPaymentButton" class="pos-primary-btn mt-6 h-11 w-full rounded-xl text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50" type="button">Process Payment</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="addProductModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="addProductTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="pos-icon-box inline-flex h-12 w-12 items-center justify-center rounded-2xl">
+        <i data-lucide="package-plus" class="h-6 w-6"></i>
+      </span>
+      <h2 id="addProductTitle" class="mt-5 text-2xl font-extrabold text-lap-ink">Add Product</h2>
+      <p class="mt-2 text-sm leading-6 text-lap-muted">Create a POS product with a name and price.</p>
+
+      <label class="mt-5 block text-xs font-extrabold uppercase tracking-[.16em] text-lap-muted" for="productName">Product Name</label>
+      <input id="productName" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-bold text-lap-ink outline-none transition focus:border-emerald-600 focus:bg-white" type="text" placeholder="Product name">
+
+      <label class="mt-4 block text-xs font-extrabold uppercase tracking-[.16em] text-lap-muted" for="productPrice">Product Price</label>
+      <input id="productPrice" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-bold text-lap-ink outline-none transition focus:border-emerald-600 focus:bg-white" type="number" min="0" step="1" value="0">
+
+      <p id="productError" class="mt-3 hidden text-xs font-semibold text-red-600">Enter a product name and a price greater than zero.</p>
+
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelAddProduct" class="h-11 rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Cancel</button>
+        <button id="confirmAddProduct" class="h-11 rounded-xl border border-lap-line bg-emerald-50 text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="productSuccessModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="productSuccessTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+        <i data-lucide="check" class="h-7 w-7"></i>
+      </span>
+      <h2 id="productSuccessTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Product Added</h2>
+      <p id="productSuccessMessage" class="mt-3 text-sm leading-6 text-lap-muted"></p>
+      <button id="closeProductSuccess" class="mt-6 h-11 w-full rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Done</button>
+    </div>
+  </div>
+
+  <div id="manageProductsModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="manageProductsTitle">
+    <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="manageProductsTitle" class="text-2xl font-extrabold text-lap-ink">Edit Products</h2>
+          <p class="mt-2 text-sm leading-6 text-lap-muted">Manage existing POS products, update prices, or remove products.</p>
+        </div>
+        <span class="pos-icon-box inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl">
+          <i data-lucide="list" class="h-6 w-6"></i>
+        </span>
+      </div>
+
+      <div class="mt-5 overflow-hidden rounded-xl border border-lap-line">
+        <div class="max-h-[430px] overflow-auto">
+          <table class="w-full min-w-[560px] text-left text-sm">
+            <thead class="sticky top-0 z-10 bg-[#F7F5F7] text-xs uppercase tracking-[.12em] text-lap-muted">
+              <tr>
+                <th class="px-4 py-4">Product</th>
+                <th class="px-4 py-4">Price</th>
+                <th class="px-4 py-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="manageProductsRows" class="divide-y divide-lap-line"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="emptyManageProducts" class="mt-5 hidden rounded-xl border border-dashed border-lap-line px-5 py-10 text-center">
+        <h3 class="text-base font-extrabold text-lap-ink">No products to edit</h3>
+        <p class="mt-2 text-sm text-lap-muted">Add a product first before managing products.</p>
+      </div>
+
+      <button id="closeManageProducts" class="mt-6 h-11 w-full rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Close</button>
+    </div>
+  </div>
+
+  <div id="editProductModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="editProductTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="pos-icon-box inline-flex h-12 w-12 items-center justify-center rounded-2xl">
+        <i data-lucide="pencil" class="h-6 w-6"></i>
+      </span>
+      <h2 id="editProductTitle" class="mt-5 text-2xl font-extrabold text-lap-ink">Edit Product</h2>
+      <p class="mt-2 text-sm leading-6 text-lap-muted">Update the product name or price, or delete this product.</p>
+
+      <label class="mt-5 block text-xs font-extrabold uppercase tracking-[.16em] text-lap-muted" for="editProductName">Product Name</label>
+      <input id="editProductName" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-bold text-lap-ink outline-none transition focus:border-emerald-600 focus:bg-white" type="text" placeholder="Product name">
+
+      <label class="mt-4 block text-xs font-extrabold uppercase tracking-[.16em] text-lap-muted" for="editProductPrice">Product Price</label>
+      <input id="editProductPrice" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-bold text-lap-ink outline-none transition focus:border-emerald-600 focus:bg-white" type="number" min="0" step="1" value="0">
+
+      <p id="editProductError" class="mt-3 hidden text-xs font-semibold text-red-600">Enter a product name and a price greater than zero.</p>
+
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="deleteProductButton" class="h-11 rounded-xl border border-red-500/30 bg-red-50 text-sm font-bold text-red-700 transition hover:border-red-600 hover:bg-red-100" type="button">Delete</button>
+        <button id="confirmEditProduct" class="h-11 rounded-xl border border-lap-line bg-emerald-50 text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Confirm</button>
+        <button id="cancelEditProduct" class="col-span-2 h-11 rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteProductModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="deleteProductTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+        <i data-lucide="trash-2" class="h-7 w-7"></i>
+      </span>
+      <h2 id="deleteProductTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Delete Product?</h2>
+      <p id="deleteProductMessage" class="mt-3 text-sm leading-6 text-lap-muted"></p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelDeleteProduct" class="h-11 rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Cancel</button>
+        <button id="confirmDeleteProduct" class="h-11 rounded-xl border border-red-500/30 bg-red-50 text-sm font-bold text-red-700 transition hover:border-red-600 hover:bg-red-100" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="paymentModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <h2 id="paymentTitle" class="text-xl font-extrabold text-lap-ink">Review Order</h2>
+      <div id="paymentReceipt" class="mt-4 max-h-[62vh] overflow-y-auto rounded-xl border border-lap-line bg-white p-4 text-sm"></div>
+      <div class="mt-5 grid grid-cols-2 gap-3">
+        <button id="cancelPayment" class="h-11 rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Cancel</button>
+        <button id="confirmPayment" class="h-11 rounded-xl border border-lap-line bg-emerald-50 text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="paymentSuccessModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="paymentSuccessTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="pos-icon-box mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl">
+        <i data-lucide="check" class="h-7 w-7"></i>
+      </span>
+      <h2 id="paymentSuccessTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Payment Confirmed</h2>
+      <p id="paymentSuccessMessage" class="mt-3 text-sm leading-6 text-lap-muted"></p>
+      <button id="closePaymentSuccess" class="mt-6 h-11 w-full rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Done</button>
+    </div>
+  </div>
+
+  <div id="logoutModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+    <div class="logout-dialog w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="pos-icon-box mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl">
+        <i data-lucide="log-out" class="h-7 w-7"></i>
+      </span>
+      <h2 id="logoutTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Confirm Logout</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Are you sure you want to logout from the admin dashboard?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelLogout" class="modal-cancel h-11 rounded-xl text-sm font-bold transition" type="button">Cancel</button>
+        <a class="modal-logout inline-flex h-11 items-center justify-center rounded-xl text-sm font-bold transition" href="index.html">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const toggleSidebar = document.getElementById('toggleSidebar');
+    const logoutButton = document.getElementById('logoutButton');
+    const logoutModal = document.getElementById('logoutModal');
+    const cancelLogout = document.getElementById('cancelLogout');
+    const POS_PRODUCTS_KEY = 'lapit_pos_products_v2';
+    const BILLS_KEY = 'lapit_cashier_bills';
+    const posDate = document.getElementById('posDate');
+    const addProductButton = document.getElementById('addProductButton');
+    const manageProductsButton = document.getElementById('manageProductsButton');
+    const addProductModal = document.getElementById('addProductModal');
+    const cancelAddProduct = document.getElementById('cancelAddProduct');
+    const confirmAddProduct = document.getElementById('confirmAddProduct');
+    const productName = document.getElementById('productName');
+    const productPrice = document.getElementById('productPrice');
+    const productError = document.getElementById('productError');
+    const productGrid = document.getElementById('productGrid');
+    const emptyProducts = document.getElementById('emptyProducts');
+    const productSearch = document.getElementById('productSearch');
+    const orderItems = document.getElementById('orderItems');
+    const orderTotal = document.getElementById('orderTotal');
+    const productSuccessModal = document.getElementById('productSuccessModal');
+    const productSuccessTitle = document.getElementById('productSuccessTitle');
+    const productSuccessMessage = document.getElementById('productSuccessMessage');
+    const closeProductSuccess = document.getElementById('closeProductSuccess');
+    const manageProductsModal = document.getElementById('manageProductsModal');
+    const manageProductsRows = document.getElementById('manageProductsRows');
+    const emptyManageProducts = document.getElementById('emptyManageProducts');
+    const closeManageProducts = document.getElementById('closeManageProducts');
+    const editProductModal = document.getElementById('editProductModal');
+    const editProductName = document.getElementById('editProductName');
+    const editProductPrice = document.getElementById('editProductPrice');
+    const editProductError = document.getElementById('editProductError');
+    const cancelEditProduct = document.getElementById('cancelEditProduct');
+    const confirmEditProduct = document.getElementById('confirmEditProduct');
+    const deleteProductButton = document.getElementById('deleteProductButton');
+    const deleteProductModal = document.getElementById('deleteProductModal');
+    const deleteProductMessage = document.getElementById('deleteProductMessage');
+    const cancelDeleteProduct = document.getElementById('cancelDeleteProduct');
+    const confirmDeleteProduct = document.getElementById('confirmDeleteProduct');
+    const processPaymentButton = document.getElementById('processPaymentButton');
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentReceipt = document.getElementById('paymentReceipt');
+    const cancelPayment = document.getElementById('cancelPayment');
+    const confirmPayment = document.getElementById('confirmPayment');
+    const paymentSuccessModal = document.getElementById('paymentSuccessModal');
+    const paymentSuccessMessage = document.getElementById('paymentSuccessMessage');
+    const closePaymentSuccess = document.getElementById('closePaymentSuccess');
+
+    let products = [];
+    let order = [];
+    let pendingPayment = null;
+    let productBeingEditedId = null;
+
+    const formatMoney = (value) => `P${Number(value || 0).toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+
+    const loadProducts = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(POS_PRODUCTS_KEY) || '[]');
+        if (Array.isArray(saved)) return saved;
+      } catch (error) {
+        return [];
+      }
+
+      return [];
+    };
+
+    const saveProducts = () => {
+      localStorage.setItem(POS_PRODUCTS_KEY, JSON.stringify(products));
+    };
+
+    const showModal = (modal) => {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    const hideModal = (modal) => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    const resetProductForm = () => {
+      productName.value = '';
+      productPrice.value = '0';
+      productError.classList.add('hidden');
+      productName.classList.remove('border-red-500');
+      productPrice.classList.remove('border-red-500');
+    };
+
+    const getVisibleProducts = () => {
+      const query = productSearch.value.trim().toLowerCase();
+      return products.filter((product) => !query || product.name.toLowerCase().includes(query));
+    };
+
+    const renderProducts = () => {
+      const visibleProducts = getVisibleProducts();
+      productGrid.innerHTML = '';
+      emptyProducts.classList.toggle('hidden', visibleProducts.length > 0);
+
+      visibleProducts.forEach((product) => {
+        const row = document.createElement('tr');
+        row.className = 'transition hover:bg-slate-50';
+        row.innerHTML = `
+          <td class="px-4 py-4 sm:px-5">
+            <strong class="block max-w-[220px] truncate text-lap-ink sm:max-w-none">${escapeHtml(product.name)}</strong>
+            <span class="text-xs text-lap-muted">Product</span>
+          </td>
+          <td class="pos-accent px-4 py-4 font-extrabold sm:px-5">${formatMoney(product.price)}</td>
+          <td class="px-4 py-4 text-right sm:px-5">
+              <button class="add-to-order pos-primary-btn rounded-xl px-4 py-2 text-xs font-bold transition" type="button" data-product-id="${escapeHtml(product.id)}">Add</button>
+          </td>
+        `;
+        productGrid.appendChild(row);
+      });
+
+      lucide.createIcons();
+    };
+
+    const renderManageProducts = () => {
+      manageProductsRows.innerHTML = '';
+      emptyManageProducts.classList.toggle('hidden', products.length > 0);
+
+      products.forEach((product) => {
+        const row = document.createElement('tr');
+        row.className = 'transition hover:bg-slate-50';
+        row.innerHTML = `
+          <td class="px-4 py-4">
+            <strong class="block max-w-[220px] truncate text-lap-ink sm:max-w-none">${escapeHtml(product.name)}</strong>
+          </td>
+          <td class="pos-accent px-4 py-4 font-extrabold">${formatMoney(product.price)}</td>
+          <td class="px-4 py-4 text-right">
+            <button class="manage-edit-product rounded-xl border border-lap-line bg-white px-4 py-2 text-xs font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button" data-product-id="${escapeHtml(product.id)}">Edit</button>
+          </td>
+        `;
+        manageProductsRows.appendChild(row);
+      });
+
+      lucide.createIcons();
+    };
+
+    const renderOrder = () => {
+      if (!order.length) {
+        orderItems.innerHTML = '<p class="text-sm text-lap-muted">No items added yet.</p>';
+        orderTotal.textContent = formatMoney(0);
+        processPaymentButton.disabled = true;
+        return;
+      }
+
+      orderItems.innerHTML = order.map((item) => `
+        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-lap-line/70 py-1.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <span class="min-w-0 truncate text-sm font-semibold text-lap-ink">${escapeHtml(item.name)} <small class="font-medium text-lap-muted">${formatMoney(item.price)}</small></span>
+          <div class="inline-flex h-7 items-center overflow-hidden rounded-md border border-lap-line bg-white">
+            <button class="order-qty-btn h-7 w-7 text-xs font-extrabold text-lap-ink transition hover:bg-slate-100" type="button" data-order-action="decrease" data-product-id="${escapeHtml(item.id)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">-</button>
+            <span class="inline-flex h-7 min-w-7 items-center justify-center border-x border-lap-line px-2 text-xs font-extrabold text-lap-ink">${item.quantity}</span>
+            <button class="order-qty-btn h-7 w-7 text-xs font-extrabold text-lap-ink transition hover:bg-slate-100" type="button" data-order-action="increase" data-product-id="${escapeHtml(item.id)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button>
+          </div>
+          <strong class="col-span-2 text-right text-sm sm:col-span-1 sm:min-w-[68px]">${formatMoney(item.price * item.quantity)}</strong>
+        </div>
+      `).join('');
+
+      orderTotal.textContent = formatMoney(order.reduce((sum, item) => sum + (item.price * item.quantity), 0));
+      processPaymentButton.disabled = false;
+    };
+
+    const addToOrder = (productId) => {
+      const product = products.find((item) => item.id === productId);
+      if (!product) return;
+
+      const existing = order.find((item) => item.id === productId);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        order.push({ ...product, quantity: 1 });
+      }
+      renderOrder();
+    };
+
+    const changeOrderQuantity = (productId, action) => {
+      const item = order.find((entry) => entry.id === productId);
+      if (!item) return;
+
+      if (action === 'increase') {
+        item.quantity += 1;
+      } else {
+        item.quantity -= 1;
+        if (item.quantity <= 0) {
+          order = order.filter((entry) => entry.id !== productId);
+        }
+      }
+
+      renderOrder();
+    };
+
+    const confirmProduct = () => {
+      const name = productName.value.trim();
+      const price = Number(productPrice.value);
+
+      if (!name || !Number.isFinite(price) || price <= 0) {
+        productError.classList.remove('hidden');
+        productName.classList.toggle('border-red-500', !name);
+        productPrice.classList.toggle('border-red-500', !Number.isFinite(price) || price <= 0);
+        return;
+      }
+
+      const product = {
+        id: `product-${Date.now()}`,
+        name,
+        price
+      };
+      products.unshift(product);
+      saveProducts();
+      renderProducts();
+      renderManageProducts();
+      hideModal(addProductModal);
+      productSuccessTitle.textContent = 'Product Added';
+      productSuccessMessage.textContent = `${name} has been added to the POS products.`;
+      showModal(productSuccessModal);
+      lucide.createIcons();
+    };
+
+    const resetEditProductForm = () => {
+      editProductError.classList.add('hidden');
+      editProductName.classList.remove('border-red-500');
+      editProductPrice.classList.remove('border-red-500');
+    };
+
+    const openEditProductModal = (productId) => {
+      const product = products.find((item) => item.id === productId);
+      if (!product) return;
+
+      productBeingEditedId = productId;
+      editProductName.value = product.name;
+      editProductPrice.value = String(product.price);
+      resetEditProductForm();
+      showModal(editProductModal);
+      editProductName.focus();
+      editProductName.select();
+    };
+
+    const confirmEditProductDetails = () => {
+      const product = products.find((item) => item.id === productBeingEditedId);
+      const name = editProductName.value.trim();
+      const price = Number(editProductPrice.value);
+
+      if (!product || !name || !Number.isFinite(price) || price <= 0) {
+        editProductError.classList.remove('hidden');
+        editProductName.classList.toggle('border-red-500', !name);
+        editProductPrice.classList.toggle('border-red-500', !Number.isFinite(price) || price <= 0);
+        return;
+      }
+
+      product.name = name;
+      product.price = price;
+      order.forEach((item) => {
+        if (item.id === product.id) {
+          item.name = name;
+          item.price = price;
+        }
+      });
+
+      saveProducts();
+      renderProducts();
+      renderManageProducts();
+      renderOrder();
+      hideModal(editProductModal);
+      productBeingEditedId = null;
+      productSuccessTitle.textContent = 'Product Updated';
+      productSuccessMessage.textContent = `${name} has been updated.`;
+      showModal(productSuccessModal);
+      lucide.createIcons();
+    };
+
+    const openDeleteProductModal = () => {
+      const product = products.find((item) => item.id === productBeingEditedId);
+      if (!product) return;
+      deleteProductMessage.textContent = `Are you sure you want to delete ${product.name}?`;
+      showModal(deleteProductModal);
+    };
+
+    const confirmDeleteProductDetails = () => {
+      const product = products.find((item) => item.id === productBeingEditedId);
+      if (!product) return;
+
+      products = products.filter((item) => item.id !== product.id);
+      order = order.filter((item) => item.id !== product.id);
+      saveProducts();
+      renderProducts();
+      renderManageProducts();
+      renderOrder();
+      hideModal(deleteProductModal);
+      hideModal(editProductModal);
+      productBeingEditedId = null;
+      productSuccessTitle.textContent = 'Product Deleted';
+      productSuccessMessage.textContent = `${product.name} has been deleted.`;
+      showModal(productSuccessModal);
+      lucide.createIcons();
+    };
+
+    const getOrderTotal = () => order.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    const createPaymentDraft = () => ({
+      id: `bill-${Date.now()}`,
+      sourceType: 'pos',
+      sourceId: 'basic-pos',
+      name: 'POS Order',
+      status: 'Settled',
+      items: order.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price || 0),
+        quantity: Number(item.quantity || 0),
+        amount: Number(item.price || 0) * Number(item.quantity || 0)
+      })),
+      total: getOrderTotal(),
+      createdAt: Date.now(),
+      endedAt: Date.now()
+    });
+
+    const renderPaymentReceipt = (bill) => {
+      const itemRows = bill.items.map((item) => `
+        <div class="flex justify-between gap-3 py-1">
+          <span class="text-lap-muted">${formatMoney(item.price)} ${escapeHtml(item.name)} (${item.quantity})</span>
+          <strong>${formatMoney(item.amount)}</strong>
+        </div>
+      `).join('');
+
+      paymentReceipt.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-base font-extrabold text-lap-ink">Order Receipt</h3>
+            <p class="mt-1 text-xs text-lap-muted">Basic POS</p>
+          </div>
+          <p class="text-right text-[11px] font-semibold text-lap-muted">${new Intl.DateTimeFormat('en-PH', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          }).format(new Date(bill.createdAt))}</p>
+        </div>
+
+        <div class="mt-3 border-y border-dashed border-lap-line py-2 text-xs">
+          <div class="flex justify-between gap-4 py-0.5">
+            <span class="text-lap-muted">Items</span>
+            <strong class="text-lap-ink">${bill.items.reduce((sum, item) => sum + item.quantity, 0)}</strong>
+          </div>
+        </div>
+
+        <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Order Items</strong>
+          <div class="mt-1">${itemRows}</div>
+        </div>
+
+        <div class="mt-3 flex justify-between gap-4 border-t border-lap-line pt-3 text-lg">
+          <span class="font-extrabold text-lap-ink">Amount Due</span>
+          <strong class="pos-accent">${formatMoney(bill.total)}</strong>
+        </div>
+      `;
+    };
+
+    const openPaymentModal = () => {
+      if (!order.length) return;
+      pendingPayment = createPaymentDraft();
+      renderPaymentReceipt(pendingPayment);
+      showModal(paymentModal);
+    };
+
+    const saveBill = (bill) => {
+      let bills = [];
+      try {
+        const saved = JSON.parse(localStorage.getItem(BILLS_KEY) || '[]');
+        bills = Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        bills = [];
+      }
+
+      bills.unshift(bill);
+      localStorage.setItem(BILLS_KEY, JSON.stringify(bills));
+    };
+
+    const confirmPaymentOrder = () => {
+      if (!pendingPayment) return;
+      saveBill(pendingPayment);
+      const total = pendingPayment.total;
+      order = [];
+      pendingPayment = null;
+      renderOrder();
+      hideModal(paymentModal);
+      paymentSuccessMessage.textContent = `Order has been confirmed. Amount due is ${formatMoney(total)}.`;
+      showModal(paymentSuccessModal);
+      lucide.createIcons();
+    };
+
+    toggleSidebar.addEventListener('click', () => {
+      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      toggleSidebar.setAttribute('aria-expanded', String(!isCollapsed));
+    });
+
+    logoutButton.addEventListener('click', () => {
+      logoutModal.classList.remove('hidden');
+      logoutModal.classList.add('flex');
+    });
+
+    cancelLogout.addEventListener('click', () => {
+      logoutModal.classList.add('hidden');
+      logoutModal.classList.remove('flex');
+    });
+
+    logoutModal.addEventListener('click', (event) => {
+      if (event.target === logoutModal) {
+        logoutModal.classList.add('hidden');
+        logoutModal.classList.remove('flex');
+      }
+    });
+
+    addProductButton.addEventListener('click', () => {
+      resetProductForm();
+      showModal(addProductModal);
+      productName.focus();
+    });
+
+    cancelAddProduct.addEventListener('click', () => hideModal(addProductModal));
+    confirmAddProduct.addEventListener('click', confirmProduct);
+
+    addProductModal.addEventListener('click', (event) => {
+      if (event.target === addProductModal) hideModal(addProductModal);
+    });
+
+    productName.addEventListener('input', () => {
+      productError.classList.add('hidden');
+      productName.classList.remove('border-red-500');
+    });
+
+    productPrice.addEventListener('input', () => {
+      productError.classList.add('hidden');
+      productPrice.classList.remove('border-red-500');
+    });
+
+    productGrid.addEventListener('click', (event) => {
+      const addButton = event.target.closest('.add-to-order');
+      if (addButton) addToOrder(addButton.dataset.productId);
+    });
+
+    orderItems.addEventListener('click', (event) => {
+      const button = event.target.closest('.order-qty-btn');
+      if (!button) return;
+      changeOrderQuantity(button.dataset.productId, button.dataset.orderAction);
+    });
+
+    productSearch.addEventListener('input', renderProducts);
+
+    const closeProductSuccessFlow = () => {
+      hideModal(productSuccessModal);
+      hideModal(addProductModal);
+      hideModal(manageProductsModal);
+      hideModal(editProductModal);
+      hideModal(deleteProductModal);
+      productBeingEditedId = null;
+    };
+
+    closeProductSuccess.addEventListener('click', closeProductSuccessFlow);
+
+    productSuccessModal.addEventListener('click', (event) => {
+      if (event.target === productSuccessModal) closeProductSuccessFlow();
+    });
+
+    manageProductsButton.addEventListener('click', () => {
+      renderManageProducts();
+      showModal(manageProductsModal);
+    });
+
+    closeManageProducts.addEventListener('click', () => hideModal(manageProductsModal));
+
+    manageProductsModal.addEventListener('click', (event) => {
+      if (event.target === manageProductsModal) hideModal(manageProductsModal);
+    });
+
+    manageProductsRows.addEventListener('click', (event) => {
+      const editButton = event.target.closest('.manage-edit-product');
+
+      if (editButton) openEditProductModal(editButton.dataset.productId);
+    });
+
+    editProductName.addEventListener('input', () => {
+      editProductError.classList.add('hidden');
+      editProductName.classList.remove('border-red-500');
+    });
+
+    editProductPrice.addEventListener('input', () => {
+      editProductError.classList.add('hidden');
+      editProductPrice.classList.remove('border-red-500');
+    });
+
+    cancelEditProduct.addEventListener('click', () => {
+      hideModal(editProductModal);
+      productBeingEditedId = null;
+    });
+
+    confirmEditProduct.addEventListener('click', confirmEditProductDetails);
+    deleteProductButton.addEventListener('click', openDeleteProductModal);
+    cancelDeleteProduct.addEventListener('click', () => hideModal(deleteProductModal));
+    confirmDeleteProduct.addEventListener('click', confirmDeleteProductDetails);
+
+    editProductModal.addEventListener('click', (event) => {
+      if (event.target === editProductModal) {
+        hideModal(editProductModal);
+        productBeingEditedId = null;
+      }
+    });
+
+    deleteProductModal.addEventListener('click', (event) => {
+      if (event.target === deleteProductModal) hideModal(deleteProductModal);
+    });
+
+    processPaymentButton.addEventListener('click', openPaymentModal);
+    cancelPayment.addEventListener('click', () => hideModal(paymentModal));
+    confirmPayment.addEventListener('click', confirmPaymentOrder);
+
+    paymentModal.addEventListener('click', (event) => {
+      if (event.target === paymentModal) hideModal(paymentModal);
+    });
+
+    closePaymentSuccess.addEventListener('click', () => hideModal(paymentSuccessModal));
+
+    paymentSuccessModal.addEventListener('click', (event) => {
+      if (event.target === paymentSuccessModal) hideModal(paymentSuccessModal);
+    });
+
+    posDate.textContent = new Intl.DateTimeFormat('en-PH', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(new Date());
+
+    products = loadProducts();
+    saveProducts();
+    renderProducts();
+    renderManageProducts();
+    renderOrder();
+  </script>
+</body>
+</html>

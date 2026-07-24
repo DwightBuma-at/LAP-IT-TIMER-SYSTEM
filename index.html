@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAP IT | Billiard & Karaoke Timer System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lap: {
+              purple: '#3B178F',
+              dark: '#27105F',
+              light: '#EEE9FA',
+              ink: '#050505',
+              muted: '#68636C',
+              line: '#DED9E0'
+            }
+          },
+          fontFamily: {
+            display: ['Barlow Condensed', 'sans-serif'],
+            body: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    section {
+      scroll-margin-top: 72px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: #050505;
+    }
+
+    .hero-stage {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #12082e;
+    }
+
+    .hero-stage::before,
+    .hero-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-repeat: no-repeat;
+      background-size: auto 100%;
+      z-index: 0;
+    }
+
+    .hero-stage::before {
+      background-image: url("assets/billiards.png");
+      background-position: left 12%;
+      clip-path: polygon(0 0, 62% 0, 47% 100%, 0 100%);
+      opacity: .98;
+    }
+
+    .hero-stage::after {
+      background-image: url("assets/singing.png");
+      background-position: right 12%;
+      clip-path: polygon(40% 0, 100% 0, 100% 100%, 25% 100%);
+      opacity: .94;
+    }
+
+    .hero-tint {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(90deg, rgba(11, 8, 31, .12), rgba(59, 23, 143, .58) 44%, rgba(42, 11, 92, .24)),
+        radial-gradient(circle at 50% 48%, rgba(59, 23, 143, .18), rgba(10, 4, 29, .46) 76%);
+    }
+
+    .nav-link {
+      position: relative;
+      color: #111827;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      transition: color .2s ease, background .2s ease;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -7px;
+      height: 2px;
+      transform: scaleX(0);
+      transform-origin: center;
+      background: #3B178F;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .nav-link:hover {
+      color: #3B178F;
+    }
+
+    .nav-link.is-active {
+      color: #3B178F;
+    }
+
+    .nav-link.is-active::after {
+      transform: scaleX(1);
+      background: linear-gradient(90deg, #3B178F, #0F766E);
+    }
+
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      background: linear-gradient(90deg, #3B178F, #0F766E);
+    }
+
+    .nav-pill {
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid rgba(15, 23, 42, .10);
+      box-shadow: 0 14px 35px rgba(15, 23, 42, .12);
+      backdrop-filter: blur(14px);
+    }
+
+    .login-cta {
+      background: #EF233C;
+      color: #ffffff;
+      box-shadow: 0 14px 28px rgba(239, 35, 60, .24);
+    }
+
+    .login-cta:hover {
+      background: #C9182E;
+      transform: translateY(-1px);
+    }
+
+    .login-cta .login-arrow {
+      background: #ffffff;
+      color: #EF233C;
+    }
+
+    .lap-logo {
+      opacity: 1;
+      filter: none;
+      mix-blend-mode: normal;
+      isolation: isolate;
+    }
+
+    .site-header {
+      background: transparent;
+      backdrop-filter: none;
+      border-bottom: 0;
+      box-shadow: none;
+      isolation: isolate;
+      transition: background .25s ease, backdrop-filter .25s ease, box-shadow .25s ease;
+    }
+
+    .site-header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -3px;
+      height: 3px;
+      background: transparent;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .site-header.is-scrolled {
+      background: linear-gradient(90deg, rgba(12, 6, 40, .92), rgba(59, 23, 143, .86), rgba(15, 118, 110, .78));
+      backdrop-filter: blur(14px);
+      box-shadow: 0 12px 35px rgba(15, 23, 42, .16);
+    }
+
+    .site-header.is-scrolled::after {
+      background: rgba(255, 255, 255, .10);
+    }
+
+    .overview-tab {
+      min-width: 110px;
+      padding: 12px 24px;
+      border: 1px solid rgba(255, 255, 255, .35);
+      background: rgba(255, 255, 255, .12);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+      transition: background .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    .overview-tab:first-child {
+      border-radius: 999px 0 0 999px;
+    }
+
+    .overview-tab:last-child {
+      border-radius: 0 999px 999px 0;
+      border-left: 0;
+    }
+
+    .overview-tab.is-active {
+      background: #ffffff;
+      color: #3B178F;
+      border-color: #ffffff;
+    }
+
+    .overview-section {
+      background: linear-gradient(180deg, #3B178F 0%, #27105F 100%);
+      color: #ffffff;
+    }
+
+    .contact-link {
+      color: rgba(255, 255, 255, .82);
+      transition: color .2s ease, transform .2s ease;
+    }
+
+    .contact-link:hover {
+      color: #ffffff;
+      transform: translateX(3px);
+    }
+
+    .message-submit {
+      background: #3B178F;
+      color: #ffffff;
+    }
+
+    .message-submit:hover {
+      background: #27105F;
+    }
+
+    .contact-form,
+    .contact-form h3,
+    .contact-form label,
+    .contact-form input,
+    .contact-form textarea {
+      color: #050505;
+    }
+
+    .contact-form input::placeholder,
+    .contact-form textarea::placeholder {
+      color: rgba(104, 99, 108, .58);
+    }
+
+    .contact-form label {
+      color: #3f3a45;
+    }
+
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      -webkit-text-stroke: 1.5px rgba(255, 255, 255, .55);
+      text-shadow: 0 5px 22px rgba(0, 0, 0, .35);
+    }
+
+    @media (max-width: 768px) {
+      .hero-stage::before {
+        clip-path: none;
+        opacity: .62;
+        background-size: cover;
+      }
+
+      .hero-stage::after {
+        clip-path: none;
+        opacity: .58;
+        background-position: 62% 12%;
+        background-size: cover;
+      }
+    }
+
+    /* Contrast guard: prevent invisible light text on white surfaces. */
+    .bg-white,
+    .bg-white h1,
+    .bg-white h2,
+    .bg-white h3,
+    .bg-white h4,
+    .bg-white p,
+    .bg-white label,
+    .bg-white span,
+    .bg-white strong,
+    .bg-white td,
+    .bg-white th,
+    .bg-white input,
+    .bg-white textarea,
+    .bg-white select,
+    .logout-dialog,
+    .logout-dialog * {
+      color: #050505 !important;
+    }
+
+    .bg-white .text-lap-muted,
+    .bg-white .table-muted,
+    .bg-white [class*="text-lap-muted"],
+    .bg-white input::placeholder,
+    .bg-white textarea::placeholder {
+      color: #68636C !important;
+    }
+
+    .bg-white .text-lap-purple,
+    .bg-white [class*="text-lap-purple"] {
+      color: #3B178F !important;
+    }
+
+    .bg-white .text-emerald-600,
+    .bg-white [class*="text-emerald-600"] {
+      color: #059669 !important;
+    }
+
+    .bg-white .text-blue-600,
+    .bg-white [class*="text-blue-600"] {
+      color: #2563EB !important;
+    }
+
+    .bg-white .text-amber-600,
+    .bg-white [class*="text-amber-600"] {
+      color: #D97706 !important;
+    }
+
+    .bg-white .text-red-600,
+    .bg-white [class*="text-red-600"] {
+      color: #DC2626 !important;
+    }
+
+    button.bg-lap-purple,
+    a.bg-lap-purple,
+    .bg-white button.bg-lap-purple,
+    .bg-white a.bg-lap-purple,
+    .message-submit,
+    .modal-logout,
+    .logout-confirm {
+      color: #FFFFFF !important;
+    }
+
+    button.bg-lap-dark,
+    a.bg-lap-dark,
+    button.bg-red-600,
+    a.bg-red-600 {
+      color: #FFFFFF;
+    }
+
+  </style>
+</head>
+<body>
+  <header id="siteHeader" class="site-header fixed top-0 z-50 w-full">
+    <nav class="relative mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10" aria-label="Main navigation">
+      <a href="#home" class="flex items-center gap-3" aria-label="LAP IT home">
+        <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="lap-logo h-16 w-40 object-contain object-left sm:h-20 sm:w-52">
+      </a>
+
+      <div class="nav-pill absolute left-1/2 hidden h-10 -translate-x-1/2 items-center gap-8 rounded-full px-8 text-sm font-medium md:flex">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#overview">Overview</a>
+        <a class="nav-link" href="#how-it-works">How It Works</a>
+        <a class="nav-link" href="#contact">Contact</a>
+      </div>
+
+      <button class="login-trigger login-cta hidden h-10 items-center gap-3 rounded-full pl-5 pr-2 text-xs font-extrabold uppercase tracking-[.02em] transition md:inline-flex" type="button">
+        Login
+        <span class="login-arrow inline-flex h-7 w-7 items-center justify-center rounded-full">
+          <i data-lucide="arrow-right" class="h-4 w-4"></i>
+        </span>
+      </button>
+
+      <button id="menuButton" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/25 text-white transition hover:border-white/60 hover:bg-white/15 md:hidden" type="button" aria-label="Open menu" aria-expanded="false">
+        <i data-lucide="menu" class="h-5 w-5"></i>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-white/15 bg-black/35 px-5 py-4 backdrop-blur-md md:hidden">
+      <div class="grid gap-4 text-sm font-semibold">
+        <a class="text-white/85 transition hover:text-white" href="#features">Features</a>
+        <a class="text-white/85 transition hover:text-white" href="#overview">Overview</a>
+        <a class="text-white/85 transition hover:text-white" href="#how-it-works">How It Works</a>
+        <a class="text-white/85 transition hover:text-white" href="#contact">Contact</a>
+        <button class="login-trigger text-left text-white/85 transition hover:text-white" type="button">Login</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero-stage">
+      <div class="hero-tint"></div>
+      <div class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-5 pb-24 pt-28 text-center text-white sm:px-8 sm:pt-36 lg:px-10">
+        <h1 class="hero-title font-display text-[3.15rem] font-extrabold leading-none sm:text-[4.25rem] lg:text-[5.35rem]">
+          Billiard & Karaoke<br>
+          <span class="mt-5 inline-block uppercase sm:mt-7 sm:pl-12">Timer System</span>
+        </h1>
+        <p class="mt-20 max-w-4xl text-sm leading-7 text-white/82 sm:mt-24 sm:text-base">
+          A complete point-of-sale and timer management system for billiard halls, karaoke bars,
+          and entertainment venues. Automate billing, track sessions, and grow your business.
+        </p>
+        <div class="mt-9 flex flex-col items-center gap-4 sm:flex-row">
+          <a href="#how-it-works" class="inline-flex h-12 items-center gap-3 rounded-xl bg-lap-purple px-8 text-sm font-bold text-white shadow-[0_12px_30px_rgba(0,0,0,.28)] ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:bg-lap-dark">
+            How It Works
+            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+          </a>
+          <a href="#features" class="inline-flex h-12 items-center rounded-xl border border-white/25 bg-white/10 px-8 text-sm font-bold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/18">
+            View Features
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="flex min-h-screen items-start bg-white px-5 pb-24 pt-14 sm:px-8 sm:pt-16 lg:px-10">
+      <div class="mx-auto w-full max-w-7xl">
+        <div class="text-center">
+          <p class="text-xs font-bold uppercase tracking-[.22em] text-lap-purple">What It Offer</p>
+          <h2 class="section-title mt-4 text-5xl text-lap-ink sm:text-6xl">Features</h2>
+        </div>
+        <div class="mx-auto mt-14 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <article class="rounded-xl border border-lap-line bg-white p-7 shadow-[0_10px_28px_rgba(39,16,95,.08)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_16px_38px_rgba(39,16,95,.16)]">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+              <i data-lucide="clock-3" class="h-5 w-5"></i>
+            </span>
+            <h3 class="mt-6 text-base font-extrabold text-lap-ink">Timer</h3>
+            <p class="mt-3 text-sm leading-6 text-lap-muted">Precision per-table and room countdown timers with automatic billing. Start, pause, and end sessions with one click.</p>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-7 shadow-[0_10px_28px_rgba(39,16,95,.08)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_16px_38px_rgba(39,16,95,.16)]">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+              <i data-lucide="clipboard-check" class="h-5 w-5"></i>
+            </span>
+            <h3 class="mt-6 text-base font-extrabold text-lap-ink">Booking</h3>
+            <p class="mt-3 text-sm leading-6 text-lap-muted">Manage karaoke room reservations.</p>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-7 shadow-[0_10px_28px_rgba(39,16,95,.08)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_16px_38px_rgba(39,16,95,.16)]">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+              <i data-lucide="credit-card" class="h-5 w-5"></i>
+            </span>
+            <h3 class="mt-6 text-base font-extrabold text-lap-ink">POS System</h3>
+            <p class="mt-3 text-sm leading-6 text-lap-muted">Calculate bills, process payments, and update inventory in real-time.</p>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-7 shadow-[0_10px_28px_rgba(39,16,95,.08)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_16px_38px_rgba(39,16,95,.16)]">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+              <i data-lucide="bar-chart-3" class="h-5 w-5"></i>
+            </span>
+            <h3 class="mt-6 text-base font-extrabold text-lap-ink">Analytics & Reports</h3>
+            <p class="mt-3 text-sm leading-6 text-lap-muted">Daily, weekly, and monthly revenue reports. Identify peak hours and top-performing tables.</p>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-7 shadow-[0_10px_28px_rgba(39,16,95,.08)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_16px_38px_rgba(39,16,95,.16)]">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+              <i data-lucide="users" class="h-5 w-5"></i>
+            </span>
+            <h3 class="mt-6 text-base font-extrabold text-lap-ink">Staff Management</h3>
+            <p class="mt-3 text-sm leading-6 text-lap-muted">Assign staff roles, track shifts, and monitor activity logs across all sessions.</p>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-7 shadow-[0_10px_28px_rgba(39,16,95,.08)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_16px_38px_rgba(39,16,95,.16)]">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+              <i data-lucide="bell" class="h-5 w-5"></i>
+            </span>
+            <h3 class="mt-6 text-base font-extrabold text-lap-ink">Smart Notifications</h3>
+            <p class="mt-3 text-sm leading-6 text-lap-muted">Automated alerts for session expiry, unpaid bills, and room availability.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview" class="overview-section flex min-h-screen items-start px-5 pb-24 pt-14 sm:px-8 sm:pt-16 lg:px-10">
+      <div class="mx-auto w-full max-w-7xl">
+        <div class="text-center">
+          <p class="text-xs font-bold uppercase tracking-[.24em] text-white/70">System</p>
+          <h2 class="section-title mt-4 text-5xl text-white sm:text-6xl">System Overview</h2>
+        </div>
+
+        <div class="mt-8 flex justify-center sm:mt-10">
+          <div class="inline-flex" role="tablist" aria-label="System overview preview">
+            <button class="overview-tab" type="button" role="tab" aria-selected="true" data-overview-tab="admin">Admin</button>
+            <button class="overview-tab" type="button" role="tab" aria-selected="false" data-overview-tab="staff">Staff</button>
+          </div>
+        </div>
+
+        <div class="mx-auto mt-8 grid max-w-5xl gap-5 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-[0_28px_60px_rgba(0,0,0,.24)] backdrop-blur sm:p-5 lg:grid-cols-[1.35fr_.65fr] lg:items-stretch">
+          <div class="overflow-hidden rounded-xl bg-white/10">
+            <img id="overviewImage" src="assets/ss.png" alt="Admin dashboard preview" class="aspect-video h-full min-h-[210px] w-full object-contain transition duration-300 sm:min-h-[300px] lg:min-h-[360px]">
+          </div>
+          <div class="flex flex-col justify-center rounded-xl bg-white/10 px-5 py-6 text-center sm:px-7 lg:text-left">
+            <span class="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-lap-purple lg:mx-0">
+              <i data-lucide="monitor-check" class="h-6 w-6"></i>
+            </span>
+            <h3 id="overviewImageTitle" class="mt-5 font-display text-3xl font-extrabold leading-tight sm:text-4xl">Admin Dashboard Placeholder</h3>
+            <p id="overviewImageText" class="mt-4 max-w-xl text-sm leading-7 text-white/75">
+              Admin system preview image will be placed here.
+            </p>
+            <div class="mt-6 grid grid-cols-2 gap-3 text-left text-xs text-white/72">
+              <span class="rounded-lg border border-white/15 bg-white/8 p-3">Timer Preview</span>
+              <span class="rounded-lg border border-white/15 bg-white/8 p-3">Billing View</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="flex min-h-screen items-start bg-white px-5 pb-32 pt-14 sm:px-8 sm:pt-16 lg:px-10">
+      <div class="mx-auto w-full max-w-7xl">
+        <div class="text-center">
+          <p class="text-xs font-bold uppercase tracking-[.22em] text-lap-purple">Process</p>
+          <h2 class="section-title mt-4 text-5xl text-lap-ink sm:text-6xl">How It Works</h2>
+        </div>
+
+        <div class="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <article class="rounded-xl border border-lap-line bg-white px-6 pb-7 pt-5 shadow-[0_14px_34px_rgba(39,16,95,.07)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_18px_44px_rgba(39,16,95,.13)] sm:px-7 sm:pb-8 sm:pt-6 lg:px-8">
+            <h3 class="text-xl font-extrabold text-lap-ink">Step 01</h3>
+            <h4 class="mt-4 text-base font-extrabold text-lap-ink">Log in as Staff</h4>
+            <p class="mt-6 text-sm leading-7 text-lap-ink/75 sm:text-base">Staff account are created through the admin side, to ensure security and integrity who uses the system.</p>
+          </article>
+
+          <article class="rounded-xl border border-lap-line bg-white px-6 pb-7 pt-5 shadow-[0_14px_34px_rgba(39,16,95,.07)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_18px_44px_rgba(39,16,95,.13)] sm:px-7 sm:pb-8 sm:pt-6 lg:px-8">
+            <h3 class="text-xl font-extrabold text-lap-ink">Step 02</h3>
+            <h4 class="mt-4 text-base font-extrabold text-lap-ink">Start in timer</h4>
+            <p class="mt-6 text-sm leading-7 text-lap-ink/75 sm:text-base">In session, table and room timer is shown. Just pick a table or room number and start the timer or set it.</p>
+          </article>
+
+          <article class="rounded-xl border border-lap-line bg-white px-6 pb-7 pt-5 shadow-[0_14px_34px_rgba(39,16,95,.07)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_18px_44px_rgba(39,16,95,.13)] sm:px-7 sm:pb-8 sm:pt-6 lg:px-8">
+            <h3 class="text-xl font-extrabold text-lap-ink">Step 03</h3>
+            <h4 class="mt-4 text-base font-extrabold text-lap-ink">Billing</h4>
+            <p class="mt-6 text-sm leading-7 text-lap-ink/75 sm:text-base">When time is up, the system calculates the exact amount owed based on your configured rates.</p>
+          </article>
+        </div>
+
+        <div class="mx-auto mt-8 grid max-w-[780px] gap-6 sm:grid-cols-2">
+          <article class="rounded-xl border border-lap-line bg-white px-6 pb-7 pt-5 shadow-[0_14px_34px_rgba(39,16,95,.07)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_18px_44px_rgba(39,16,95,.13)] sm:px-7 sm:pb-8 sm:pt-6 lg:px-8">
+            <h3 class="text-xl font-extrabold text-lap-ink">Step 04</h3>
+            <h4 class="mt-4 text-base font-extrabold text-lap-ink">Payment</h4>
+            <p class="mt-6 text-sm leading-7 text-lap-ink/75 sm:text-base">Process cash or digital payments directly from the dashboard and print receipts instantly.</p>
+          </article>
+
+          <article class="rounded-xl border border-lap-line bg-white px-6 pb-7 pt-5 shadow-[0_14px_34px_rgba(39,16,95,.07)] transition hover:-translate-y-1 hover:border-lap-purple hover:shadow-[0_18px_44px_rgba(39,16,95,.13)] sm:px-7 sm:pb-8 sm:pt-6 lg:px-8">
+            <h3 class="text-xl font-extrabold text-lap-ink">Step 05</h3>
+            <h4 class="mt-4 text-base font-extrabold text-lap-ink">Report</h4>
+            <p class="mt-6 text-sm leading-7 text-lap-ink/75 sm:text-base">View real-time occupancy and daily revenue summaries across all tables and rooms.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="bg-[#3B178F] px-5 pb-16 pt-14 text-white sm:px-8 sm:pb-20 sm:pt-16 lg:px-10">
+      <div class="mx-auto min-h-screen w-full max-w-7xl">
+        <div class="text-center">
+          <p class="text-xs font-bold uppercase tracking-[.22em] text-white/70">Get In Touch</p>
+        </div>
+
+        <div class="mt-12 grid items-start gap-10 lg:grid-cols-2">
+          <div>
+            <h2 class="font-display text-4xl font-extrabold leading-tight text-white sm:text-5xl">Ready to Upgrade Your Business?</h2>
+            <p class="mt-5 max-w-xl text-base leading-7 text-white/76">Reach out to LAP I.T. Solutions and we will set up the system. Fully configured and ready</p>
+
+            <div class="mt-8 grid gap-5 text-sm text-white/82 sm:mt-10 sm:gap-6">
+              <div class="flex items-center gap-5">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white">
+                  <i data-lucide="phone" class="h-5 w-5"></i>
+                </span>
+                <a class="contact-link" href="tel:09171361944">0917 136 1944</a>
+              </div>
+              <div class="flex items-center gap-5">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white">
+                  <i data-lucide="mail" class="h-5 w-5"></i>
+                </span>
+                <a class="contact-link" href="mailto:lapitsolutions09@gmail.com">lapitsolutions09@gmail.com</a>
+              </div>
+              <div class="flex items-center gap-5">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white">
+                  <i data-lucide="map-pin" class="h-5 w-5"></i>
+                </span>
+                <a class="contact-link max-w-xl leading-6" href="https://www.bing.com/maps/default.aspx?v=2&pc=FACEBK&mid=8100&where1=Marcela%20Bldg.%20%20Dr.%202%20Jose%20Palma%20Gil.%20Street%20Barangay%2034-D%2C%20Davao%20City%2C%20Philippines%2C%208000&FORM=FBKPL1&mkt=en-US&fbclid=IwZXh0bgNhZW0CMTAAYnJpZBExWGxCZGtjVHVCcmgxcGZGZ3NydGMGYXBwX2lkEDIyMjAzOTE3ODgyMDA4OTIAAR6xpvM3Nvgi2Ar5kHeWXgbM-W0bpplfzqg-mmOdYF8Q_37QcobnzsHuL5UIeA_aem_y1BphJRXv5OiXArQ-ZCezA" target="_blank" rel="noopener">Marcela Bldg. Dr. 2 Jose Palma Gil. Street Barangay 34-D, Davao City, Philippines, 8000</a>
+              </div>
+              <div class="flex items-center gap-5">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white">
+                  <i data-lucide="globe" class="h-5 w-5"></i>
+                </span>
+                <a class="contact-link" href="https://lapsolinc.com/?fbclid=IwZXh0bgNhZW0CMTAAYnJpZBExWGxCZGtjVHVCcmgxcGZGZ3NydGMGYXBwX2lkEDIyMjAzOTE3ODgyMDA4OTIAAR5_vJYMNRw-BeKNAORTHoOdQmTcNC60YJJUl7U0_s0LMJ94c7jB3_9Qzv-Ikw_aem_wGNHUOjyo3i-tw1kYBh2yw" target="_blank" rel="noopener">lapsolinc.com</a>
+              </div>
+            </div>
+          </div>
+
+          <form id="contactForm" class="contact-form w-full rounded-2xl bg-white p-5 shadow-[0_28px_60px_rgba(0,0,0,.28)] sm:p-7 lg:p-8" action="#" method="post">
+            <h3 class="font-display text-2xl font-extrabold leading-tight text-lap-ink">Send Us a Message</h3>
+            <label class="mt-6 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="fullName">Full Name</label>
+            <input id="fullName" class="mt-2 h-12 w-full rounded-xl border border-[#D8D1EA] bg-lap-light/70 px-4 text-sm outline-none transition placeholder:text-lap-muted/45 focus:border-lap-purple focus:bg-white" type="text" placeholder="Full name" required>
+
+            <label class="mt-5 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="emailAddress">Email Address</label>
+            <input id="emailAddress" class="mt-2 h-12 w-full rounded-xl border border-[#D8D1EA] bg-lap-light/70 px-4 text-sm outline-none transition placeholder:text-lap-muted/45 focus:border-lap-purple focus:bg-white" type="email" placeholder="Email address" required>
+
+            <label class="mt-5 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="message">Message</label>
+            <textarea id="message" class="mt-2 min-h-24 w-full resize-none rounded-xl border border-[#D8D1EA] bg-lap-light/70 px-4 py-3 text-sm outline-none transition placeholder:text-lap-muted/45 focus:border-lap-purple focus:bg-white sm:min-h-28" placeholder="Tell us about your question..."></textarea>
+
+            <button class="message-submit mt-6 h-12 w-full rounded-xl text-sm font-extrabold shadow-[0_12px_24px_rgba(59,23,143,.35)] transition" type="submit">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-[#050505] px-5 py-16 text-white sm:px-8 lg:px-10">
+      <div class="mx-auto max-w-7xl">
+        <div class="grid gap-12 md:grid-cols-[1.3fr_.7fr_.7fr]">
+          <div>
+            <div class="flex items-center gap-3">
+              <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-16 w-40 object-contain object-left sm:h-20 sm:w-52">
+            </div>
+            <p class="mt-5 max-w-sm text-sm leading-6 text-white/66">LAP I.T. Solutions</p>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-extrabold uppercase tracking-[.18em] text-white">Product</h3>
+            <div class="mt-5 grid gap-3 text-sm text-white/70">
+              <a class="transition hover:text-white" href="#features">Features</a>
+              <a class="transition hover:text-white" href="#how-it-works">How It Works</a>
+              <a class="transition hover:text-white" href="#overview">Overview</a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-extrabold uppercase tracking-[.18em] text-white">Company</h3>
+            <div class="mt-5 grid gap-3 text-sm text-white/70">
+              <a class="transition hover:text-white" href="#overview">About</a>
+              <a class="transition hover:text-white" href="#contact">Contact</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-14 border-t border-white/10 pt-8 text-center text-xs text-white/56">
+          &copy; 2026 LAP I.T. Solutions. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <div id="loginModal" class="fixed inset-0 z-[80] hidden items-center justify-center overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-sm sm:px-5" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="grid max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-white/70 bg-white shadow-[0_28px_90px_rgba(0,0,0,.34)] md:grid-cols-[.9fr_1.1fr]">
+      <div class="relative flex min-h-[210px] flex-col justify-between bg-gradient-to-br from-[#16092F] via-[#3B178F] to-[#0F766E] p-5 text-white sm:min-h-[240px] sm:p-8">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,.20),transparent_34%),radial-gradient(circle_at_78%_18%,rgba(255,255,255,.14),transparent_30%)]"></div>
+        <div class="relative">
+          <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-24 w-52 max-w-full object-contain object-left sm:h-28 sm:w-60">
+        </div>
+        <a class="relative inline-flex w-fit max-w-full whitespace-nowrap rounded-2xl border border-white/35 bg-white/12 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[.04em] text-white shadow-sm transition hover:border-white/70 hover:bg-white/20 sm:px-4 sm:py-3 sm:text-sm sm:tracking-[.08em]" href="https://lapsolinc.com/" target="_blank" rel="noopener">
+          Powered by LAP I.T. Solutions
+        </a>
+      </div>
+
+      <div class="p-5 sm:p-8">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-[.18em] text-lap-muted">Secure Access</p>
+            <h2 id="loginTitle" class="mt-3 text-3xl font-extrabold text-lap-ink">Login</h2>
+          </div>
+          <button id="closeLoginModal" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-lap-line text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button" aria-label="Close login">
+            <i data-lucide="x" class="h-5 w-5"></i>
+          </button>
+        </div>
+
+        <form id="loginForm" class="mt-7">
+          <label class="block text-xs font-extrabold uppercase tracking-[.16em] text-lap-muted" for="loginEmail">Username</label>
+          <div class="mt-2 flex h-12 items-center gap-3 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 transition focus-within:border-lap-purple focus-within:bg-white">
+            <i data-lucide="user" class="h-4 w-4 text-lap-muted"></i>
+            <input id="loginEmail" class="w-full bg-transparent text-sm font-semibold text-lap-ink outline-none placeholder:text-lap-muted/50" type="text" placeholder="Username" required>
+          </div>
+
+          <label class="mt-5 block text-xs font-extrabold uppercase tracking-[.16em] text-lap-muted" for="loginPassword">Password</label>
+          <div class="mt-2 flex h-12 items-center gap-3 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 transition focus-within:border-lap-purple focus-within:bg-white">
+            <i data-lucide="lock" class="h-4 w-4 text-lap-muted"></i>
+            <input id="loginPassword" class="w-full bg-transparent text-sm font-semibold text-lap-ink outline-none placeholder:text-lap-muted/50" type="password" placeholder="Password" required>
+            <button id="togglePassword" class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lap-muted transition hover:bg-slate-200 hover:text-lap-ink" type="button" aria-label="Show password">
+              <i id="passwordToggleIcon" data-lucide="eye" class="h-4 w-4"></i>
+            </button>
+          </div>
+
+          <label class="mt-4 flex items-center gap-2 text-sm font-semibold text-lap-muted">
+            <input id="showPasswordCheckbox" class="h-4 w-4 rounded border-lap-line accent-lap-purple" type="checkbox">
+            Show password
+          </label>
+
+          <p id="loginError" class="mt-3 hidden text-xs font-semibold text-red-600">Please enter both username and password.</p>
+
+          <div class="mt-7 grid grid-cols-2 gap-3">
+            <button id="cancelLogin" class="h-12 rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Cancel</button>
+            <button class="message-submit h-12 rounded-xl text-sm font-extrabold transition" type="submit">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="redirectModal" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="redirectTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_70px_rgba(0,0,0,.30)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+        <i data-lucide="loader-circle" class="h-7 w-7 animate-spin"></i>
+      </span>
+      <h2 id="redirectTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Redirecting</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Opening the admin interface...</p>
+    </div>
+  </div>
+
+  <div id="loginErrorModal" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="loginErrorTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_70px_rgba(0,0,0,.30)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+        <i data-lucide="circle-alert" class="h-7 w-7"></i>
+      </span>
+      <h2 id="loginErrorTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Login Failed</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">The username or password you entered is incorrect. Please try again.</p>
+      <button id="closeLoginError" class="mt-6 h-11 w-full rounded-xl border border-lap-line bg-white text-sm font-bold text-lap-ink transition hover:border-slate-400 hover:bg-slate-100" type="button">Try Again</button>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const menuButton = document.getElementById('menuButton');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const siteHeader = document.getElementById('siteHeader');
+    const navLinks = document.querySelectorAll('a[href^="#"]');
+    const desktopNavLinks = document.querySelectorAll('.nav-pill .nav-link');
+    const trackedSections = [...desktopNavLinks].map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+    const overviewTabs = document.querySelectorAll('[data-overview-tab]');
+    const overviewImage = document.getElementById('overviewImage');
+    const overviewImageTitle = document.getElementById('overviewImageTitle');
+    const overviewImageText = document.getElementById('overviewImageText');
+    const contactForm = document.getElementById('contactForm');
+    const loginModal = document.getElementById('loginModal');
+    const loginTriggers = document.querySelectorAll('.login-trigger');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const cancelLogin = document.getElementById('cancelLogin');
+    const loginForm = document.getElementById('loginForm');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordToggleIcon = document.getElementById('passwordToggleIcon');
+    const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
+    const redirectModal = document.getElementById('redirectModal');
+    const loginErrorModal = document.getElementById('loginErrorModal');
+    const closeLoginError = document.getElementById('closeLoginError');
+    const overviewContent = {
+      admin: {
+        image: 'assets/ss.png',
+        alt: 'Admin dashboard preview',
+        title: 'Admin Dashboard',
+        text: 'Admin interface preview for managing system controls.'
+      },
+      staff: {
+        image: 'assets/ss1.png',
+        alt: 'Staff dashboard preview',
+        title: 'Staff Dashboard',
+        text: 'Staff interface preview for daily session operations.'
+      }
+    };
+
+    const updateHeaderStyle = () => {
+      siteHeader.classList.toggle('is-scrolled', window.scrollY > window.innerHeight * 0.55);
+    };
+
+    const updateActiveNav = () => {
+      const headerOffset = siteHeader.offsetHeight + 40;
+      let activeSection = trackedSections[0]?.id || '';
+
+      trackedSections.forEach((section) => {
+        if (section.offsetTop - headerOffset <= window.scrollY) {
+          activeSection = section.id;
+        }
+      });
+
+      desktopNavLinks.forEach((link) => {
+        link.classList.toggle('is-active', link.getAttribute('href') === `#${activeSection}`);
+      });
+    };
+
+    updateHeaderStyle();
+    updateActiveNav();
+    window.addEventListener('scroll', updateHeaderStyle, { passive: true });
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+    menuButton.addEventListener('click', () => {
+      const isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      menuButton.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    mobileMenu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        menuButton.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    const showLoginModal = () => {
+      loginModal.classList.remove('hidden');
+      loginModal.classList.add('flex');
+      mobileMenu.classList.add('hidden');
+      menuButton.setAttribute('aria-expanded', 'false');
+      loginError.classList.add('hidden');
+      loginEmail.value = '';
+      loginPassword.value = '';
+      showPasswordCheckbox.checked = false;
+      loginPassword.type = 'password';
+      passwordToggleIcon.setAttribute('data-lucide', 'eye');
+      lucide.createIcons();
+      setTimeout(() => loginEmail.focus(), 0);
+    };
+
+    const hideLoginModal = () => {
+      loginModal.classList.add('hidden');
+      loginModal.classList.remove('flex');
+    };
+
+    loginTriggers.forEach((button) => {
+      button.addEventListener('click', showLoginModal);
+    });
+
+    closeLoginModal.addEventListener('click', hideLoginModal);
+    cancelLogin.addEventListener('click', hideLoginModal);
+
+    loginModal.addEventListener('click', (event) => {
+      if (event.target === loginModal) hideLoginModal();
+    });
+
+    loginForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      if (!loginEmail.value.trim() || !loginPassword.value.trim()) {
+        loginError.classList.remove('hidden');
+        return;
+      }
+
+      if (loginEmail.value.trim() !== 'admin' || loginPassword.value.trim() !== 'admin123') {
+        loginError.classList.add('hidden');
+        loginErrorModal.classList.remove('hidden');
+        loginErrorModal.classList.add('flex');
+        lucide.createIcons();
+        return;
+      }
+
+      hideLoginModal();
+      redirectModal.classList.remove('hidden');
+      redirectModal.classList.add('flex');
+      lucide.createIcons();
+      setTimeout(() => {
+        window.location.href = 'billiard-table-timer.html';
+      }, 900);
+    });
+
+    [loginEmail, loginPassword].forEach((input) => {
+      input.addEventListener('input', () => loginError.classList.add('hidden'));
+    });
+
+    const setPasswordVisibility = (isVisible) => {
+      loginPassword.type = isVisible ? 'text' : 'password';
+      showPasswordCheckbox.checked = isVisible;
+      passwordToggleIcon.setAttribute('data-lucide', isVisible ? 'eye-off' : 'eye');
+      togglePassword.setAttribute('aria-label', isVisible ? 'Hide password' : 'Show password');
+      lucide.createIcons();
+    };
+
+    togglePassword.addEventListener('click', () => {
+      setPasswordVisibility(loginPassword.type === 'password');
+    });
+
+    showPasswordCheckbox.addEventListener('change', () => {
+      setPasswordVisibility(showPasswordCheckbox.checked);
+    });
+
+    closeLoginError.addEventListener('click', () => {
+      loginErrorModal.classList.add('hidden');
+      loginErrorModal.classList.remove('flex');
+      loginPassword.focus();
+      loginPassword.select();
+    });
+
+    loginErrorModal.addEventListener('click', (event) => {
+      if (event.target === loginErrorModal) {
+        loginErrorModal.classList.add('hidden');
+        loginErrorModal.classList.remove('flex');
+      }
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const targetId = link.getAttribute('href');
+        if (!targetId || targetId === '#') return;
+
+        const target = document.querySelector(targetId);
+        if (!target) return;
+
+        event.preventDefault();
+        const headerHeight = siteHeader.offsetHeight;
+        const targetTop = target.getBoundingClientRect().top + window.scrollY - headerHeight;
+
+        window.scrollTo({
+          top: Math.max(targetTop, 0),
+          behavior: 'smooth'
+        });
+
+        history.pushState(null, '', targetId);
+        desktopNavLinks.forEach((desktopLink) => {
+          desktopLink.classList.toggle('is-active', desktopLink.getAttribute('href') === targetId);
+        });
+      });
+    });
+
+    const setOverviewTab = (activeTab) => {
+      overviewTabs.forEach((button) => {
+        const isActive = button.dataset.overviewTab === activeTab;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+      });
+
+      overviewImage.src = overviewContent[activeTab].image;
+      overviewImage.alt = overviewContent[activeTab].alt;
+      overviewImageTitle.textContent = overviewContent[activeTab].title;
+      overviewImageText.textContent = overviewContent[activeTab].text;
+    };
+
+    overviewTabs.forEach((button) => {
+      button.addEventListener('click', () => setOverviewTab(button.dataset.overviewTab));
+    });
+
+    setOverviewTab('admin');
+
+    contactForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      if (!contactForm.reportValidity()) {
+        return;
+      }
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const emailAddress = document.getElementById('emailAddress').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const subject = encodeURIComponent(`LAP IT inquiry from ${fullName}`);
+      const body = encodeURIComponent(`Full Name: ${fullName}\nEmail Address: ${emailAddress}\n\nMessage:\n${message || 'No message provided.'}`);
+
+      window.location.href = `mailto:lapitsolutions09@gmail.com?subject=${subject}&body=${body}`;
+    });
+  </script>
+</body>
+</html>

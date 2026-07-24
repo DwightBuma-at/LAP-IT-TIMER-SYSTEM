@@ -1,0 +1,1690 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAP IT | Billiard Table Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lap: {
+              purple: '#3B178F',
+              dark: '#27105F',
+              light: '#EEE9FA',
+              ink: '#050505',
+              muted: '#68636C',
+              line: '#DED9E0'
+            }
+          },
+          fontFamily: {
+            display: ['Barlow Condensed', 'sans-serif'],
+            body: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F5F7;
+      color: #050505;
+    }
+
+    .sidebar-link {
+      color: #050505;
+      font-weight: 400;
+      transition: background .2s ease, color .2s ease;
+    }
+
+    .sidebar-link:hover {
+      background: #EEE9FA;
+      color: #3B178F;
+    }
+
+    .sidebar-link.active {
+      background: #EEE9FA;
+      color: #3B178F;
+      font-weight: 400;
+    }
+
+    .admin-sidebar,
+    .admin-main,
+    .sidebar-text,
+    .sidebar-label,
+    .status-panel,
+    .user-details {
+      transition: all .22s ease;
+    }
+
+    body.sidebar-collapsed .admin-sidebar {
+      width: 116px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    body.sidebar-collapsed .admin-main {
+      padding-left: 116px;
+    }
+
+    body.sidebar-collapsed .sidebar-text,
+    body.sidebar-collapsed .sidebar-label,
+    body.sidebar-collapsed .status-panel,
+    body.sidebar-collapsed .user-details {
+      display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-link {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-user {
+      justify-content: center;
+      border: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    body.sidebar-collapsed .sidebar-logout {
+      display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    body.sidebar-collapsed .sidebar-header {
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    body.sidebar-collapsed .sidebar-logo-box {
+      width: 64px;
+      height: 56px;
+      overflow: visible;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-logo {
+      width: 64px;
+      height: 56px;
+      object-fit: contain;
+      object-position: center;
+      max-width: none;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle {
+      width: 30px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .logout-dialog,
+    .logout-dialog h2,
+    .logout-dialog p,
+    .logout-dialog button {
+      color: #050505;
+    }
+
+    .modal-cancel {
+      background: #ffffff;
+      border: 1px solid #DED9E0;
+      color: #050505;
+    }
+
+    .modal-cancel:hover {
+      background: #EEE9FA;
+    }
+
+    .modal-logout {
+      background: #DC2626;
+      color: #ffffff;
+    }
+
+    .modal-logout:hover {
+      background: #B91C1C;
+    }
+
+    .table-card,
+    .table-card h2,
+    .table-card p,
+    .table-card strong {
+      color: #050505;
+    }
+
+    .table-card .table-muted {
+      color: #68636C;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+      background: #ffffff;
+      box-shadow: inset 0 0 0 3px currentColor;
+    }
+
+    .start-session-btn {
+      background: #EEE9FA;
+      color: #050505 !important;
+      border: 1px solid rgba(59, 23, 143, .28);
+    }
+
+    .start-session-btn:hover {
+      background: #DED5F5;
+    }
+
+    .clear-action-btn {
+      background: #EEE9FA;
+      color: #050505 !important;
+      border: 1px solid rgba(59, 23, 143, .28);
+    }
+
+    .clear-action-btn:hover {
+      background: #DED5F5;
+    }
+
+    .edit-table-btn {
+      background: #ffffff;
+      color: #050505 !important;
+      border: 1px solid rgba(59, 23, 143, .28);
+    }
+
+    .edit-table-btn:hover {
+      background: #EEE9FA;
+      border-color: rgba(59, 23, 143, .5);
+    }
+
+    .edit-table-btn:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+      background: #F7F5F7;
+      border-color: #DED9E0;
+    }
+
+    .edit-table-btn:disabled:hover {
+      background: #F7F5F7;
+      border-color: #DED9E0;
+    }
+
+    .delete-table-btn {
+      background: #FEF2F2;
+      color: #B91C1C !important;
+      border: 1px solid rgba(220, 38, 38, .26);
+    }
+
+    .delete-table-btn:hover {
+      background: #FEE2E2;
+      border-color: rgba(220, 38, 38, .45);
+    }
+
+    .primary-action-btn {
+      background: #3B178F;
+      color: #FFFFFF !important;
+    }
+
+    .primary-action-btn:hover {
+      background: #27105F;
+    }
+
+    /* Contrast guard: prevent invisible light text on white surfaces. */
+    .bg-white,
+    .bg-white h1,
+    .bg-white h2,
+    .bg-white h3,
+    .bg-white h4,
+    .bg-white p,
+    .bg-white label,
+    .bg-white span,
+    .bg-white strong,
+    .bg-white td,
+    .bg-white th,
+    .bg-white input,
+    .bg-white textarea,
+    .bg-white select,
+    .logout-dialog,
+    .logout-dialog * {
+      color: #050505 !important;
+    }
+
+    .bg-white .text-lap-muted,
+    .bg-white .table-muted,
+    .bg-white [class*="text-lap-muted"],
+    .bg-white input::placeholder,
+    .bg-white textarea::placeholder {
+      color: #68636C !important;
+    }
+
+    .bg-white .text-lap-purple,
+    .bg-white [class*="text-lap-purple"] {
+      color: #3B178F !important;
+    }
+
+    .bg-white .text-emerald-600,
+    .bg-white [class*="text-emerald-600"] {
+      color: #059669 !important;
+    }
+
+    .bg-white .text-blue-600,
+    .bg-white [class*="text-blue-600"] {
+      color: #2563EB !important;
+    }
+
+    .bg-white .text-amber-600,
+    .bg-white [class*="text-amber-600"] {
+      color: #D97706 !important;
+    }
+
+    .bg-white .text-red-600,
+    .bg-white [class*="text-red-600"] {
+      color: #DC2626 !important;
+    }
+
+    button.bg-lap-purple,
+    a.bg-lap-purple,
+    .bg-white button.bg-lap-purple,
+    .bg-white a.bg-lap-purple,
+    .message-submit,
+    .modal-logout,
+    .logout-confirm,
+    .primary-action-btn,
+    .bg-white .primary-action-btn {
+      color: #FFFFFF !important;
+    }
+
+    button.bg-lap-dark,
+    a.bg-lap-dark,
+    button.bg-red-600,
+    a.bg-red-600 {
+      color: #FFFFFF;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="flex min-h-screen">
+    <aside id="adminSidebar" class="admin-sidebar fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-lap-line bg-white px-5 py-6 shadow-[8px_0_30px_rgba(39,16,95,.04)] max-md:hidden">
+      <div class="sidebar-header flex items-center justify-between gap-3">
+        <a href="index.html" aria-label="LAP IT home">
+          <span class="sidebar-logo-box inline-flex h-16 w-24 items-center justify-start overflow-hidden rounded-2xl bg-transparent">
+            <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="sidebar-logo h-20 w-32 max-w-none object-contain object-left">
+          </span>
+        </a>
+        <button id="toggleSidebar" class="sidebar-toggle inline-flex h-9 w-9 items-center justify-center rounded-xl text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+          <i data-lucide="chevron-left" class="sidebar-toggle-icon h-5 w-5 transition-transform"></i>
+        </button>
+      </div>
+
+      <nav class="mt-6 grid gap-2 text-sm" aria-label="Admin modules">
+        <p class="sidebar-label mb-2 px-2 text-[11px] font-extrabold uppercase tracking-[.18em] text-lap-muted/70">Admin Tools</p>
+        <a class="sidebar-link active flex items-center gap-3 rounded-xl px-4 py-3.5" href="billiard-table-timer.html">
+          <i data-lucide="timer" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Billiard Table Timer</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="videoke-room-timer.html">
+          <i data-lucide="mic-2" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Videoke Room Timer</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="cashier-dashboard.html">
+          <i data-lucide="layout-dashboard" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Cashier Dashboard</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="basic-pos.html">
+          <i data-lucide="receipt-text" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Basic POS</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 rounded-xl px-4 py-3.5" href="reports.html">
+          <i data-lucide="bar-chart-3" class="h-5 w-5 shrink-0"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </nav>
+
+      <div class="mt-auto border-t border-lap-line pt-5">
+        <div class="sidebar-user flex items-center gap-3 rounded-2xl border border-lap-line bg-white p-3 shadow-sm">
+          <span class="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-lap-line bg-white shadow-sm"><img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-9 w-9 object-contain"></span>
+          <div class="user-details min-w-0">
+            <p class="truncate text-sm font-extrabold text-lap-ink">Admin</p>
+            <p class="mt-1 inline-flex rounded bg-[#E8E6EB] px-2 py-0.5 text-[10px] font-bold text-lap-muted">Admin</p>
+          </div>
+          <button id="logoutButton" class="sidebar-logout ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Logout">
+            <i data-lucide="log-out" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main id="adminMain" class="admin-main min-h-screen flex-1 pl-[260px] max-md:pl-0">
+      <header class="sticky top-0 z-30 hidden border-b border-lap-line bg-white/95 px-5 py-4 backdrop-blur max-md:block">
+        <div class="flex items-center justify-between">
+          <img src="assets/lap_it_logo-removebg-preview.png" alt="LAP IT logo" class="h-12 w-32 object-contain object-left">
+          <button class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-lap-line text-lap-purple transition hover:border-lap-purple hover:bg-lap-light" type="button" aria-label="Open menu">
+            <i data-lucide="menu" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="px-5 py-5 sm:px-7 lg:px-8">
+        <div class="mb-5">
+          <h1 class="text-xl font-extrabold text-lap-ink">Billiard Table Timer</h1>
+          <p id="billiardDate" class="mt-1 text-xs text-lap-muted"></p>
+        </div>
+
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <div class="flex items-center gap-4">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <i data-lucide="clock-3" class="h-4 w-4"></i>
+              </span>
+              <div>
+                <strong id="activeTablesCount" class="block text-lg font-extrabold text-lap-ink">0</strong>
+                <span class="text-xs text-lap-muted">Active Tables</span>
+              </div>
+            </div>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <div class="flex items-center gap-4">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-lap-light text-lap-purple">
+                <i data-lucide="circle-dot" class="h-4 w-4"></i>
+              </span>
+              <div>
+                <strong id="availableTablesCount" class="block text-lg font-extrabold text-lap-ink">0</strong>
+                <span class="text-xs text-lap-muted">Available Tables</span>
+              </div>
+            </div>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <div class="flex items-center gap-4">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <i data-lucide="calendar-check" class="h-4 w-4"></i>
+              </span>
+              <div>
+                <strong id="reservedTablesCount" class="block text-lg font-extrabold text-lap-ink">0</strong>
+                <span class="text-xs text-lap-muted">Reserved</span>
+              </div>
+            </div>
+          </article>
+          <article class="rounded-xl border border-lap-line bg-white p-4 shadow-sm">
+            <div class="flex items-center gap-4">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <i data-lucide="philippine-peso" class="h-4 w-4"></i>
+              </span>
+              <div>
+                <strong id="runningChargesTotal" class="block text-lg font-extrabold text-lap-ink">P0</strong>
+                <span class="text-xs text-lap-muted">Running Charges</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="mt-3 rounded-xl border border-lap-line bg-white px-4 py-3 shadow-sm">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <h2 class="shrink-0 text-xs font-extrabold uppercase tracking-[.14em] text-lap-muted">Status Colors</h2>
+            <div class="grid gap-2 text-xs font-bold sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end">
+              <span class="flex items-center gap-2 rounded-lg border border-lap-purple/30 bg-lap-light px-3 py-2 text-lap-purple"><b class="status-dot"></b>Available</span>
+              <span class="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-50 px-3 py-2 text-emerald-600"><b class="status-dot"></b>In Use</span>
+              <span class="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-amber-600"><b class="status-dot"></b>Paused</span>
+              <span class="flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-50 px-3 py-2 text-blue-600"><b class="status-dot"></b>Reserved</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 rounded-xl border border-lap-line bg-white p-3 shadow-sm">
+          <div class="flex flex-col gap-3 lg:flex-row">
+            <label class="flex h-11 flex-1 items-center gap-3 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-lap-muted">
+              <i data-lucide="search" class="h-4 w-4"></i>
+              <input id="tableSearchInput" class="w-full bg-transparent text-sm outline-none placeholder:text-lap-muted/60" type="search" placeholder="Search table number or status...">
+            </label>
+            <select id="tableStatusFilter" class="h-11 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-semibold text-lap-ink outline-none">
+              <option value="All Status">All Status</option>
+              <option value="Available">Available</option>
+              <option value="In Use">In Use</option>
+              <option value="Paused">Paused</option>
+              <option value="Reserved">Reserved</option>
+            </select>
+            <button id="addTableButton" class="clear-action-btn inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition" type="button">
+              <i data-lucide="plus" class="h-4 w-4"></i>
+              Add Table
+            </button>
+          </div>
+        </div>
+
+        <div id="tableGrid" class="mt-5 grid gap-5 xl:grid-cols-3"></div>
+
+        <div class="mt-5 flex flex-col gap-3 rounded-xl border border-lap-line bg-white px-4 py-3 text-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <p id="paginationSummary" class="text-xs font-semibold text-lap-muted">Showing 0 tables</p>
+          <div class="flex items-center gap-2">
+            <button id="prevTables" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-lap-line text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Previous page">
+              <i data-lucide="chevron-left" class="h-4 w-4"></i>
+            </button>
+            <div id="tablePageButtons" class="flex items-center gap-2"></div>
+            <button id="nextTables" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-lap-line text-lap-muted transition hover:bg-lap-light hover:text-lap-purple" type="button" aria-label="Next page">
+              <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="logoutModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+    <div class="logout-dialog w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+        <i data-lucide="log-out" class="h-7 w-7"></i>
+      </span>
+      <h2 id="logoutTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Confirm Logout</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Are you sure you want to logout from the admin dashboard?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelLogout" class="modal-cancel h-11 rounded-xl text-sm font-bold transition" type="button">Cancel</button>
+        <a class="modal-logout inline-flex h-11 items-center justify-center rounded-xl text-sm font-bold transition" href="index.html">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="addTableModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="addTableTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+        <i data-lucide="plus" class="h-6 w-6"></i>
+      </span>
+      <h2 id="addTableTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Add Billiard Table</h2>
+      <p class="mt-2 text-sm leading-6 text-lap-muted">The system will suggest the next table number based on the current table list.</p>
+
+      <label class="mt-5 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="newTableName">Table Name</label>
+      <input id="newTableName" class="mt-2 h-12 w-full cursor-not-allowed rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-sm font-semibold text-lap-ink outline-none" type="text" readonly aria-readonly="true">
+
+      <label class="mt-4 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="newTableHourlyRate">Price Per Hour</label>
+      <div class="relative mt-2">
+        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sm font-bold text-lap-ink">P</span>
+        <input id="newTableHourlyRate" class="h-12 w-full rounded-xl border border-lap-line bg-[#F7F5F7] pl-8 pr-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple focus:bg-white" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00" required>
+      </div>
+      <p id="hourlyRateError" class="mt-2 hidden text-xs font-semibold text-red-600">Enter a price greater than 0.</p>
+
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelAddTable" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Cancel</button>
+        <button id="confirmAddTable" class="clear-action-btn h-11 rounded-xl text-sm font-bold transition" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addTableErrorModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="addTableErrorTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+        <i data-lucide="circle-alert" class="h-7 w-7"></i>
+      </span>
+      <h2 id="addTableErrorTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Cannot Add Table</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Price per hour must be greater than 0 before adding a table.</p>
+      <button id="closeAddTableError" class="clear-action-btn mt-6 h-11 w-full rounded-xl text-sm font-bold transition" type="button">Okay</button>
+    </div>
+  </div>
+
+  <div id="editTableModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="editTableTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+        <i data-lucide="pencil" class="h-6 w-6"></i>
+      </span>
+      <h2 id="editTableTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Edit Table</h2>
+      <p class="mt-2 text-sm leading-6 text-lap-muted">Manage <strong id="editTableName" class="text-lap-ink"></strong>.</p>
+
+      <label class="mt-5 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="editTableHourlyRate">Price Per Hour</label>
+      <div class="relative mt-2">
+        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sm font-bold text-lap-ink">P</span>
+        <input id="editTableHourlyRate" class="h-12 w-full rounded-xl border border-lap-line bg-[#F7F5F7] pl-8 pr-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple focus:bg-white" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" required>
+      </div>
+      <p id="editPriceError" class="mt-2 hidden text-xs font-semibold text-red-600">Enter a valid price per hour.</p>
+
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <button id="deleteTableButton" class="delete-table-btn h-11 rounded-xl text-sm font-bold transition" type="button">Delete Table</button>
+        <button id="changePriceButton" class="clear-action-btn h-11 rounded-xl text-sm font-bold transition" type="button">Update Price</button>
+        <button id="cancelEditTable" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light sm:col-span-2" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteConfirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+        <i data-lucide="trash-2" class="h-7 w-7"></i>
+      </span>
+      <h2 id="deleteConfirmTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Delete Table?</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Are you sure you want to delete <strong id="deleteConfirmTableName" class="text-lap-ink"></strong>? This table will be removed from the list.</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelDeleteTable" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Cancel</button>
+        <button id="confirmDeleteTable" class="delete-table-btn h-11 rounded-xl text-sm font-bold transition" type="button">Confirm Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sessionActionModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="sessionActionTitle">
+    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+        <i data-lucide="play" class="h-6 w-6"></i>
+      </span>
+      <h2 id="sessionActionTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Table Session</h2>
+      <p class="mt-2 text-sm leading-6 text-lap-muted">Choose what to do for <strong id="sessionActionTableName" class="text-lap-ink"></strong>.</p>
+
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl border border-blue-500/25 bg-blue-50 p-4">
+          <h3 class="flex items-center gap-2 text-sm font-extrabold text-lap-ink">
+            <i data-lucide="calendar-plus" class="h-4 w-4 text-blue-600"></i>
+            Reserve
+          </h3>
+          <label class="mt-4 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="reserveTimeInput">Today Time</label>
+          <div class="relative mt-2">
+            <input id="reserveTimeInput" class="h-11 w-full rounded-xl border border-lap-line bg-white px-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-blue-600" type="time" required>
+          </div>
+          <button id="reserveTableButton" class="mt-4 h-11 w-full rounded-xl border border-blue-500/30 bg-white text-sm font-bold text-blue-700 transition hover:bg-blue-100" type="button">Reserve</button>
+        </div>
+
+        <div class="rounded-xl border border-emerald-500/25 bg-emerald-50 p-4">
+          <h3 class="flex items-center gap-2 text-sm font-extrabold text-lap-ink">
+            <i data-lucide="timer" class="h-4 w-4 text-emerald-600"></i>
+            Start Session
+          </h3>
+          <label class="mt-4 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="sessionHoursInput">Enter Hours</label>
+          <div class="relative mt-2">
+            <input id="sessionHoursInput" class="h-11 w-full rounded-xl border border-lap-line bg-white px-4 pr-16 text-sm font-semibold text-lap-ink outline-none transition focus:border-emerald-600" type="number" min="0.25" step="0.25" inputmode="decimal" placeholder="1">
+            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-bold text-lap-muted">hrs</span>
+          </div>
+          <button id="startTimedSessionButton" class="primary-action-btn mt-4 h-11 w-full rounded-xl text-sm font-bold transition" type="button">Start Session</button>
+        </div>
+      </div>
+
+      <p id="sessionActionError" class="mt-3 hidden text-xs font-semibold text-red-600">Enter valid hours before continuing.</p>
+
+      <button id="cancelSessionAction" class="mt-5 h-11 w-full rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <div id="pauseConfirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="pauseConfirmTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+        <i data-lucide="pause" class="h-7 w-7"></i>
+      </span>
+      <h2 id="pauseConfirmTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Pause Session?</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Pause the active timer for <strong id="pauseConfirmTableName" class="text-lap-ink"></strong>?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelPauseSession" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Cancel</button>
+        <button id="confirmPauseSession" class="h-11 rounded-xl border border-amber-500/30 bg-amber-50 text-sm font-bold text-amber-700 transition hover:bg-amber-100" type="button">Confirm Pause</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resumeConfirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="resumeConfirmTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+        <i data-lucide="play" class="h-7 w-7"></i>
+      </span>
+      <h2 id="resumeConfirmTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Resume Session?</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Resume the paused timer for <strong id="resumeConfirmTableName" class="text-lap-ink"></strong>?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelResumeSession" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Cancel</button>
+        <button id="confirmResumeSession" class="primary-action-btn h-11 rounded-xl text-sm font-bold transition" type="button">Confirm Resume</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cancelReservationModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="cancelReservationTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+        <i data-lucide="calendar-x" class="h-7 w-7"></i>
+      </span>
+      <h2 id="cancelReservationTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Cancel Reservation?</h2>
+      <p class="mt-3 text-sm leading-6 text-lap-muted">Cancel the reservation for <strong id="cancelReservationTableName" class="text-lap-ink"></strong>?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="cancelCancelReservation" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Back</button>
+        <button id="confirmCancelReservation" class="h-11 rounded-xl border border-red-500/30 bg-red-50 text-sm font-bold text-red-700 transition hover:bg-red-100" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tableSuccessModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="tableSuccessTitle">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+        <i data-lucide="check" class="h-7 w-7"></i>
+      </span>
+      <h2 id="tableSuccessTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Table Updated</h2>
+      <p id="tableSuccessMessage" class="mt-3 text-sm leading-6 text-lap-muted"></p>
+      <button id="closeTableSuccess" class="clear-action-btn mt-6 h-11 w-full rounded-xl text-sm font-bold transition" type="button">Done</button>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const STORAGE_KEY = 'lapit_billiard_tables';
+    const toggleSidebar = document.getElementById('toggleSidebar');
+    const logoutButton = document.getElementById('logoutButton');
+    const logoutModal = document.getElementById('logoutModal');
+    const cancelLogout = document.getElementById('cancelLogout');
+    const billiardDate = document.getElementById('billiardDate');
+    const tableGrid = document.getElementById('tableGrid');
+    const tablePageButtonsContainer = document.getElementById('tablePageButtons');
+    const prevTables = document.getElementById('prevTables');
+    const nextTables = document.getElementById('nextTables');
+    const paginationSummary = document.getElementById('paginationSummary');
+    const tableSearchInput = document.getElementById('tableSearchInput');
+    const tableStatusFilter = document.getElementById('tableStatusFilter');
+    const addTableButton = document.getElementById('addTableButton');
+    const addTableModal = document.getElementById('addTableModal');
+    const cancelAddTable = document.getElementById('cancelAddTable');
+    const confirmAddTable = document.getElementById('confirmAddTable');
+    const newTableName = document.getElementById('newTableName');
+    const newTableHourlyRate = document.getElementById('newTableHourlyRate');
+    const hourlyRateError = document.getElementById('hourlyRateError');
+    const addTableErrorModal = document.getElementById('addTableErrorModal');
+    const closeAddTableError = document.getElementById('closeAddTableError');
+    const editTableModal = document.getElementById('editTableModal');
+    const editTableName = document.getElementById('editTableName');
+    const editTableHourlyRate = document.getElementById('editTableHourlyRate');
+    const editPriceError = document.getElementById('editPriceError');
+    const cancelEditTable = document.getElementById('cancelEditTable');
+    const changePriceButton = document.getElementById('changePriceButton');
+    const deleteTableButton = document.getElementById('deleteTableButton');
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    const deleteConfirmTableName = document.getElementById('deleteConfirmTableName');
+    const cancelDeleteTable = document.getElementById('cancelDeleteTable');
+    const confirmDeleteTable = document.getElementById('confirmDeleteTable');
+    const sessionActionModal = document.getElementById('sessionActionModal');
+    const sessionActionTableName = document.getElementById('sessionActionTableName');
+    const reserveTimeInput = document.getElementById('reserveTimeInput');
+    const sessionHoursInput = document.getElementById('sessionHoursInput');
+    const reserveTableButton = document.getElementById('reserveTableButton');
+    const startTimedSessionButton = document.getElementById('startTimedSessionButton');
+    const sessionActionError = document.getElementById('sessionActionError');
+    const cancelSessionAction = document.getElementById('cancelSessionAction');
+    const pauseConfirmModal = document.getElementById('pauseConfirmModal');
+    const pauseConfirmTableName = document.getElementById('pauseConfirmTableName');
+    const cancelPauseSession = document.getElementById('cancelPauseSession');
+    const confirmPauseSession = document.getElementById('confirmPauseSession');
+    const resumeConfirmModal = document.getElementById('resumeConfirmModal');
+    const resumeConfirmTableName = document.getElementById('resumeConfirmTableName');
+    const cancelResumeSession = document.getElementById('cancelResumeSession');
+    const confirmResumeSession = document.getElementById('confirmResumeSession');
+    const cancelReservationModal = document.getElementById('cancelReservationModal');
+    const cancelReservationTableName = document.getElementById('cancelReservationTableName');
+    const cancelCancelReservation = document.getElementById('cancelCancelReservation');
+    const confirmCancelReservation = document.getElementById('confirmCancelReservation');
+    const tableSuccessModal = document.getElementById('tableSuccessModal');
+    const tableSuccessTitle = document.getElementById('tableSuccessTitle');
+    const tableSuccessMessage = document.getElementById('tableSuccessMessage');
+    const closeTableSuccess = document.getElementById('closeTableSuccess');
+    const activeTablesCount = document.getElementById('activeTablesCount');
+    const availableTablesCount = document.getElementById('availableTablesCount');
+    const reservedTablesCount = document.getElementById('reservedTablesCount');
+    const runningChargesTotal = document.getElementById('runningChargesTotal');
+    const tablesPerPage = 6;
+    let tables = [];
+    let currentTablePage = 1;
+    let totalTablePages = 1;
+    let tableBeingEditedId = null;
+    let tableBeingStartedId = null;
+    let tableBeingPausedId = null;
+    let tableBeingResumedId = null;
+    let tableBeingReservationCancelledId = null;
+
+    billiardDate.textContent = new Intl.DateTimeFormat('en-PH', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(new Date());
+
+    const getFilteredTables = () => {
+      const searchValue = tableSearchInput.value.trim().toLowerCase();
+      const statusValue = tableStatusFilter.value;
+
+      return tables.filter((table) => {
+        const matchesStatus = statusValue === 'All Status' || table.status === statusValue;
+        const searchableText = [
+          table.name,
+          table.status,
+          table.reservation,
+          table.reserveTime,
+          table.hourlyRate,
+          table.charge,
+          table.finalPayment
+        ].filter(Boolean).join(' ').toLowerCase();
+        const matchesSearch = !searchValue || searchableText.includes(searchValue);
+        return matchesStatus && matchesSearch;
+      });
+    };
+
+    const formatHourlyRate = (rate) => Number(rate).toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    const formatPeso = (amount) => `P${Number(amount).toLocaleString('en-PH', {
+      maximumFractionDigits: 0
+    })}`;
+
+    const formatDurationFromHours = (hours) => {
+      const totalMinutes = Math.round(Number(hours) * 60);
+      return formatClockFromSeconds(totalMinutes * 60);
+    };
+
+    const formatClockFromSeconds = (seconds) => {
+      const wholeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+      const hourPart = Math.floor(wholeSeconds / 3600);
+      const minutePart = Math.floor((wholeSeconds % 3600) / 60);
+      const secondPart = wholeSeconds % 60;
+      return `${String(hourPart).padStart(2, '0')}:${String(minutePart).padStart(2, '0')}:${String(secondPart).padStart(2, '0')}`;
+    };
+
+    const getRemainingSessionSeconds = (table) => {
+      if (!table.startedAt || (!table.durationSeconds && !table.durationMinutes)) {
+        return null;
+      }
+
+      const elapsedSeconds = Math.floor((Date.now() - Number(table.startedAt)) / 1000);
+      const durationSeconds = Number(table.durationSeconds || Math.round(Number(table.durationMinutes) * 60));
+      return Math.max(0, durationSeconds - elapsedSeconds);
+    };
+
+    const getTableTimerText = (table) => {
+      const remainingSeconds = getRemainingSessionSeconds(table);
+
+      if (remainingSeconds === null) {
+        return table.elapsed || '00:00:00';
+      }
+
+      return formatClockFromSeconds(remainingSeconds);
+    };
+
+    const formatDurationFromMinutes = (minutes) => {
+      const totalMinutes = Math.round(Number(minutes) || 0);
+      const hourPart = Math.floor(totalMinutes / 60);
+      const minutePart = totalMinutes % 60;
+      const hourText = hourPart ? `${hourPart} hr${hourPart === 1 ? '' : 's'}` : '';
+      const minuteText = minutePart ? `${minutePart} min${minutePart === 1 ? '' : 's'}` : '';
+      return [hourText, minuteText].filter(Boolean).join(' ') || '0 mins';
+    };
+
+    const formatStartedTime = (timestamp) => {
+      if (!timestamp) {
+        return '--';
+      }
+
+      return new Date(Number(timestamp)).toLocaleTimeString('en-PH', {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    };
+
+    const formatAvailedHours = (table) => {
+      if (!table.availedHours && !table.durationMinutes) {
+        return '--';
+      }
+
+      const hours = Number(table.availedHours || Number(table.durationMinutes) / 60);
+      return `${hours.toLocaleString('en-PH', {
+        minimumFractionDigits: hours % 1 === 0 ? 0 : 2,
+        maximumFractionDigits: 2
+      })} hr${hours === 1 ? '' : 's'}`;
+    };
+
+    const getSessionPayment = (table) => {
+      if (Number.isFinite(Number(table.finalPayment))) {
+        return Number(table.finalPayment);
+      }
+
+      if (Number.isFinite(Number(table.charge))) {
+        return Number(table.charge);
+      }
+
+      return Number(table.hourlyRate || 0) * Number(table.availedHours || 0);
+    };
+
+    const createEndedPaymentDetails = (table) => `
+      <div class="mx-auto mt-3 grid max-w-xs grid-cols-2 gap-2 text-left text-[11px]">
+        <span class="rounded-lg border border-lap-line bg-white px-3 py-2">
+          <b class="block text-[9px] font-extrabold uppercase tracking-[.12em] text-lap-muted">Rate Per Hour</b>
+          <strong class="mt-1 block font-bold text-lap-ink">P${formatHourlyRate(table.hourlyRate || 0)}</strong>
+        </span>
+        <span class="rounded-lg border border-lap-line bg-white px-3 py-2">
+          <b class="block text-[9px] font-extrabold uppercase tracking-[.12em] text-lap-muted">Payment</b>
+          <strong class="mt-1 block font-bold text-lap-ink">P${formatHourlyRate(getSessionPayment(table))}</strong>
+        </span>
+      </div>
+    `;
+
+    const createSessionDetails = (table) => `
+      <div class="mx-auto mt-4 grid max-w-xs grid-cols-2 gap-2 text-left text-[11px]">
+        <span class="rounded-lg border border-lap-line bg-white px-3 py-2">
+          <b class="block text-[9px] font-extrabold uppercase tracking-[.12em] text-lap-muted">Time Started</b>
+          <strong class="mt-1 block font-bold text-lap-ink">${escapeHtml(formatStartedTime(table.sessionStartedAt || table.startedAt))}</strong>
+        </span>
+        <span class="rounded-lg border border-lap-line bg-white px-3 py-2">
+          <b class="block text-[9px] font-extrabold uppercase tracking-[.12em] text-lap-muted">Hours Availed</b>
+          <strong class="mt-1 block font-bold text-lap-ink">${escapeHtml(formatAvailedHours(table))}</strong>
+        </span>
+      </div>
+    `;
+
+    const escapeHtml = (value) => String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+    const loadTables = () => {
+      try {
+        const savedTables = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        const legacyEndedStatus = ['Session', 'Ended'].join(' ');
+        tables = Array.isArray(savedTables) ? savedTables : [];
+        tables.forEach((table) => {
+          if (table.status === legacyEndedStatus) {
+            table.status = 'Available';
+          }
+
+          if (table.status === 'Available') {
+            delete table.startedAt;
+            delete table.sessionStartedAt;
+            delete table.durationMinutes;
+            delete table.durationSeconds;
+            delete table.pausedRemainingSeconds;
+            delete table.elapsed;
+            delete table.charge;
+            delete table.availedHours;
+            delete table.finalPayment;
+            delete table.endedAt;
+          }
+        });
+        saveTables();
+      } catch (error) {
+        tables = [];
+      }
+    };
+
+    const saveTables = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tables));
+    };
+
+    const showModal = (modal) => {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    const hideModal = (modal) => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    const getStatusMeta = (status) => {
+      if (status === 'In Use') {
+        return {
+          icon: 'clock-3',
+          iconClass: 'text-emerald-600',
+          badge: 'border-emerald-500/30 bg-emerald-50 text-emerald-600',
+          bubble: 'bg-emerald-50 text-emerald-600'
+        };
+      }
+
+      if (status === 'Reserved') {
+        return {
+          icon: 'calendar-check',
+          iconClass: 'text-blue-600',
+          badge: 'border-blue-500/30 bg-blue-50 text-blue-600',
+          bubble: 'bg-blue-50 text-blue-600'
+        };
+      }
+
+      if (status === 'Paused') {
+        return {
+          icon: 'pause-circle',
+          iconClass: 'text-amber-600',
+          badge: 'border-amber-500/30 bg-amber-50 text-amber-600',
+          bubble: 'bg-amber-50 text-amber-600'
+        };
+      }
+
+      return {
+        icon: 'circle-dot',
+        iconClass: 'text-lap-purple',
+        badge: 'border-lap-purple/30 bg-lap-light text-lap-purple',
+        bubble: 'bg-lap-light text-lap-purple'
+      };
+    };
+
+    const createAvailableBody = (table) => `
+      <div class="px-5 py-8 text-center">
+        <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-lap-light text-lap-purple">
+          <i data-lucide="timer" class="h-6 w-6"></i>
+        </span>
+        <p class="hourly-rate-display table-muted mt-4 text-xs">P${formatHourlyRate(table.hourlyRate)}/hr</p>
+        <button class="start-session-btn mt-4 inline-flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-bold shadow-[0_10px_20px_rgba(59,23,143,.12)] transition" type="button" data-table-id="${escapeHtml(table.id)}">
+          <i data-lucide="play" class="h-4 w-4"></i>
+          Start Session
+        </button>
+      </div>
+    `;
+
+    const createInUseBody = (table) => `
+      <div class="px-5 py-8 text-center">
+        <strong class="live-session-timer font-display text-5xl font-extrabold text-lap-purple" data-table-id="${escapeHtml(table.id)}">${escapeHtml(getTableTimerText(table))}</strong>
+        <p class="table-muted mt-3 text-xs">Current charge: P${formatHourlyRate(table.charge || 0)}</p>
+        <p class="hourly-rate-display table-muted mt-1 text-xs">P${formatHourlyRate(table.hourlyRate)}/hr</p>
+        ${createSessionDetails(table)}
+        <div class="mt-4 flex justify-center gap-2">
+          <button class="pause-session-btn h-10 rounded-xl border border-amber-500/30 bg-amber-50 px-4 text-sm font-bold text-amber-700 transition hover:border-amber-600 hover:bg-amber-100" type="button" data-table-id="${escapeHtml(table.id)}">Pause</button>
+        </div>
+      </div>
+    `;
+
+    const createPausedBody = (table) => `
+      <div class="px-5 py-8 text-center">
+        <strong class="font-display text-5xl font-extrabold text-amber-600">${escapeHtml(table.elapsed || formatClockFromSeconds(table.pausedRemainingSeconds || 0))}</strong>
+        <p class="table-muted mt-3 text-xs">Session paused</p>
+        <p class="table-muted mt-1 text-xs">Current charge: P${formatHourlyRate(table.charge || 0)}</p>
+        <p class="hourly-rate-display table-muted mt-1 text-xs">P${formatHourlyRate(table.hourlyRate)}/hr</p>
+        ${createSessionDetails(table)}
+        <div class="mt-4 flex flex-wrap justify-center gap-2">
+          <button class="resume-session-btn inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 px-5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100" type="button" data-table-id="${escapeHtml(table.id)}">
+            <i data-lucide="play" class="h-4 w-4"></i>
+            Resume
+          </button>
+        </div>
+      </div>
+    `;
+
+    const createReservedBody = (table, meta) => `
+      <div class="px-5 py-8 text-center">
+        <span class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full ${meta.bubble}">
+          <i data-lucide="calendar-clock" class="h-6 w-6"></i>
+        </span>
+        <p class="table-muted mt-4 text-xs">${escapeHtml(table.reservation || 'Reserved')}</p>
+        <p class="hourly-rate-display table-muted mt-1 text-xs">P${formatHourlyRate(table.hourlyRate)}/hr</p>
+        ${createSessionDetails(table)}
+        <div class="mt-4 flex flex-wrap justify-center gap-2">
+          <button class="view-reserved-details-btn h-10 rounded-xl border border-lap-line px-5 text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button" data-table-id="${escapeHtml(table.id)}">View Details</button>
+          <button class="cancel-reservation-btn h-10 rounded-xl border border-red-500/30 bg-red-50 px-5 text-sm font-bold text-red-700 transition hover:bg-red-100" type="button" data-table-id="${escapeHtml(table.id)}">Cancel Reservation</button>
+        </div>
+      </div>
+    `;
+
+    const createTableCard = (table) => {
+      const meta = getStatusMeta(table.status);
+      const isInUse = table.status === 'In Use';
+      const body = table.status === 'In Use'
+        ? createInUseBody(table)
+        : table.status === 'Paused'
+          ? createPausedBody(table)
+        : table.status === 'Reserved'
+          ? createReservedBody(table, meta)
+          : createAvailableBody(table);
+
+      return `
+        <article class="table-card rounded-xl border border-lap-line bg-white shadow-sm" data-table-id="${escapeHtml(table.id)}">
+          <div class="flex items-center justify-between gap-3 border-b border-lap-line px-4 py-3">
+            <h2 class="flex min-w-0 items-center gap-2 text-sm font-extrabold text-lap-ink">
+              <i data-lucide="${meta.icon}" class="h-4 w-4 shrink-0 ${meta.iconClass}"></i>
+              <span class="truncate">${escapeHtml(table.name)}</span>
+            </h2>
+            <div class="flex shrink-0 items-center gap-2">
+              <span class="rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase ${meta.badge}">${escapeHtml(table.status)}</span>
+              <button class="edit-table-btn inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-bold transition" type="button" data-table-id="${escapeHtml(table.id)}" aria-label="Edit ${escapeHtml(table.name)}" ${isInUse ? 'disabled aria-disabled="true" title="End the active session before editing"' : ''}>
+                <i data-lucide="pencil" class="h-3.5 w-3.5 text-lap-purple"></i>
+                Edit
+              </button>
+            </div>
+          </div>
+          ${body}
+        </article>
+      `;
+    };
+
+    const updateStats = () => {
+      const activeCount = tables.filter((table) => table.status === 'In Use').length;
+      const availableCount = tables.filter((table) => table.status === 'Available').length;
+      const reservedCount = tables.filter((table) => table.status === 'Reserved').length;
+      const runningCharges = tables.reduce((total, table) => total + (table.status === 'In Use' ? Number(table.charge || 0) : 0), 0);
+
+      activeTablesCount.textContent = String(activeCount);
+      availableTablesCount.textContent = String(availableCount);
+      reservedTablesCount.textContent = String(reservedCount);
+      runningChargesTotal.textContent = formatPeso(runningCharges);
+    };
+
+    const renderPagination = (visibleTables) => {
+      totalTablePages = Math.max(1, Math.ceil(visibleTables.length / tablesPerPage));
+      currentTablePage = Math.min(Math.max(currentTablePage, 1), totalTablePages);
+      tablePageButtonsContainer.innerHTML = '';
+
+      for (let page = 1; page <= totalTablePages; page += 1) {
+        const button = document.createElement('button');
+        const isActive = page === currentTablePage;
+        button.className = isActive
+          ? 'table-page-btn h-9 w-9 rounded-lg bg-lap-purple text-sm font-bold text-white'
+          : 'table-page-btn h-9 w-9 rounded-lg border border-lap-line text-sm font-bold text-lap-muted transition hover:bg-lap-light hover:text-lap-purple';
+        button.type = 'button';
+        button.dataset.page = String(page);
+        button.textContent = String(page);
+        tablePageButtonsContainer.appendChild(button);
+      }
+
+      prevTables.disabled = currentTablePage === 1;
+      nextTables.disabled = currentTablePage === totalTablePages;
+      prevTables.classList.toggle('opacity-40', prevTables.disabled);
+      nextTables.classList.toggle('opacity-40', nextTables.disabled);
+    };
+
+    const renderTables = () => {
+      const visibleTables = getFilteredTables();
+      const startIndex = (currentTablePage - 1) * tablesPerPage;
+      const currentTables = visibleTables.slice(startIndex, startIndex + tablesPerPage);
+      const hasFilters = tableSearchInput.value.trim() || tableStatusFilter.value !== 'All Status';
+
+      tableGrid.innerHTML = currentTables.length
+        ? currentTables.map(createTableCard).join('')
+        : `<div class="rounded-xl border border-dashed border-lap-line bg-white p-8 text-center text-sm font-semibold text-lap-muted xl:col-span-3">${hasFilters ? 'No tables match your search or status filter.' : 'No billiard tables yet.'}</div>`;
+
+      const start = visibleTables.length ? startIndex + 1 : 0;
+      const end = Math.min(startIndex + currentTables.length, visibleTables.length);
+      paginationSummary.textContent = visibleTables.length
+        ? `Showing ${start}-${end} of ${visibleTables.length} tables`
+        : 'Showing 0 tables';
+
+      updateStats();
+      renderPagination(visibleTables);
+      lucide.createIcons();
+      updateLiveSessionTimers();
+    };
+
+    const updateLiveSessionTimers = () => {
+      const completedTable = tables.find((table) => table.status === 'In Use' && getRemainingSessionSeconds(table) === 0);
+
+      if (completedTable) {
+        completeExpiredSession(completedTable);
+        return;
+      }
+
+      document.querySelectorAll('.live-session-timer').forEach((timer) => {
+        const table = tables.find((item) => item.id === timer.dataset.tableId);
+
+        if (!table) {
+          return;
+        }
+
+        timer.textContent = getTableTimerText(table);
+      });
+    };
+
+    const completeExpiredSession = (table) => {
+      const payment = Number(table.hourlyRate || 0) * Number(table.availedHours || Number(table.durationMinutes || 0) / 60);
+      table.status = 'Available';
+      table.lastPayment = payment;
+      table.lastEndedAt = Date.now();
+      delete table.startedAt;
+      delete table.sessionStartedAt;
+      delete table.durationMinutes;
+      delete table.durationSeconds;
+      delete table.pausedRemainingSeconds;
+      delete table.elapsed;
+      delete table.charge;
+      delete table.availedHours;
+      delete table.finalPayment;
+      delete table.endedAt;
+      saveTables();
+      renderTables();
+      showTableSuccess('Session Complete', `${table.name} is now available again. Last payment due was P${formatHourlyRate(payment)}.`);
+    };
+
+    const setTablePage = (page) => {
+      currentTablePage = Math.min(Math.max(page, 1), totalTablePages);
+      renderTables();
+    };
+
+    const getNextTableName = () => {
+      const tableNumbers = tables
+        .map((table) => table.name.match(/Table\s+(\d+)/i))
+        .filter(Boolean)
+        .map((match) => Number(match[1]));
+      const nextNumber = tableNumbers.length ? Math.max(...tableNumbers) + 1 : 1;
+      return `Table ${nextNumber}`;
+    };
+
+    const openAddTableModal = () => {
+      newTableName.value = getNextTableName();
+      newTableHourlyRate.value = '0';
+      hourlyRateError.classList.add('hidden');
+      newTableHourlyRate.classList.remove('border-red-500');
+      showModal(addTableModal);
+      newTableHourlyRate.focus();
+      newTableHourlyRate.select();
+    };
+
+    const closeAddTableModal = () => {
+      hideModal(addTableModal);
+    };
+
+    const addTableCard = () => {
+      const tableName = newTableName.value.trim() || getNextTableName();
+      const hourlyRate = Number(newTableHourlyRate.value);
+
+      if (!Number.isFinite(hourlyRate) || hourlyRate <= 0 || newTableHourlyRate.value.trim() === '') {
+        hourlyRateError.classList.remove('hidden');
+        newTableHourlyRate.classList.add('border-red-500');
+        showModal(addTableErrorModal);
+        newTableHourlyRate.focus();
+        return;
+      }
+
+      hourlyRateError.classList.add('hidden');
+      newTableHourlyRate.classList.remove('border-red-500');
+      tables.push({
+        id: `table-${Date.now()}`,
+        name: tableName,
+        status: 'Available',
+        hourlyRate
+      });
+      saveTables();
+      currentTablePage = Math.ceil(tables.length / tablesPerPage);
+      renderTables();
+      closeAddTableModal();
+      showTableSuccess('Table Added', `${tableName} has been added with a price of P${formatHourlyRate(hourlyRate)} per hour.`);
+    };
+
+    const openEditTableModal = (tableId) => {
+      const table = tables.find((item) => item.id === tableId);
+
+      if (!table) {
+        return;
+      }
+
+      tableBeingEditedId = tableId;
+      editTableName.textContent = table.name;
+      editTableHourlyRate.value = String(table.hourlyRate ?? 0);
+      editPriceError.classList.add('hidden');
+      editTableHourlyRate.classList.remove('border-red-500');
+      showModal(editTableModal);
+      editTableHourlyRate.focus();
+      editTableHourlyRate.select();
+    };
+
+    const closeEditTableModal = () => {
+      hideModal(editTableModal);
+      tableBeingEditedId = null;
+    };
+
+    const showTableSuccess = (title, message) => {
+      tableSuccessTitle.textContent = title;
+      tableSuccessMessage.textContent = message;
+      showModal(tableSuccessModal);
+    };
+
+    const changeTablePrice = () => {
+      const table = tables.find((item) => item.id === tableBeingEditedId);
+      const hourlyRate = Number(editTableHourlyRate.value);
+
+      if (!table || !Number.isFinite(hourlyRate) || hourlyRate < 0 || editTableHourlyRate.value.trim() === '') {
+        editPriceError.classList.remove('hidden');
+        editTableHourlyRate.classList.add('border-red-500');
+        editTableHourlyRate.focus();
+        return;
+      }
+
+      table.hourlyRate = hourlyRate;
+      saveTables();
+      renderTables();
+      closeEditTableModal();
+      showTableSuccess('Price Updated', `${table.name} is now set to P${formatHourlyRate(hourlyRate)} per hour.`);
+    };
+
+    const openDeleteConfirmModal = () => {
+      const table = tables.find((item) => item.id === tableBeingEditedId);
+
+      if (!table) {
+        return;
+      }
+
+      deleteConfirmTableName.textContent = table.name;
+      showModal(deleteConfirmModal);
+    };
+
+    const closeDeleteConfirmModal = () => {
+      hideModal(deleteConfirmModal);
+    };
+
+    const deleteTable = () => {
+      const table = tables.find((item) => item.id === tableBeingEditedId);
+
+      if (!table) {
+        closeDeleteConfirmModal();
+        return;
+      }
+
+      tables = tables.filter((item) => item.id !== tableBeingEditedId);
+      saveTables();
+      currentTablePage = Math.min(currentTablePage, Math.max(1, Math.ceil(tables.length / tablesPerPage)));
+      renderTables();
+      closeDeleteConfirmModal();
+      closeEditTableModal();
+      showTableSuccess('Table Deleted', `${table.name} has been removed from the billiard table list.`);
+    };
+
+    const clearSessionActionError = () => {
+      sessionActionError.classList.add('hidden');
+      sessionActionError.textContent = 'Enter valid hours before continuing.';
+      reserveTimeInput.classList.remove('border-red-500');
+      sessionHoursInput.classList.remove('border-red-500');
+    };
+
+    const openSessionActionModal = (tableId) => {
+      const table = tables.find((item) => item.id === tableId);
+
+      if (!table) {
+        return;
+      }
+
+      tableBeingStartedId = tableId;
+      sessionActionTableName.textContent = table.name;
+      reserveTimeInput.value = table.reserveTime || '';
+      sessionHoursInput.value = '';
+      reserveTableButton.textContent = table.status === 'Reserved' ? 'Update Reserve' : 'Reserve';
+      clearSessionActionError();
+      showModal(sessionActionModal);
+      if (table.status === 'Reserved') {
+        reserveTimeInput.focus();
+      } else {
+        sessionHoursInput.focus();
+      }
+    };
+
+    const closeSessionActionModal = () => {
+      hideModal(sessionActionModal);
+      tableBeingStartedId = null;
+      clearSessionActionError();
+    };
+
+    const getValidSessionHours = (input) => {
+      const hours = Number(input.value);
+
+      if (!Number.isFinite(hours) || hours <= 0 || input.value.trim() === '') {
+        sessionActionError.classList.remove('hidden');
+        input.classList.add('border-red-500');
+        input.focus();
+        return null;
+      }
+
+      clearSessionActionError();
+      return hours;
+    };
+
+    const formatReserveTime = (timeValue) => {
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      return date.toLocaleTimeString('en-PH', {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    };
+
+    const getValidReserveTime = () => {
+      if (!reserveTimeInput.value) {
+        sessionActionError.textContent = 'Choose a reserve time for today before continuing.';
+        sessionActionError.classList.remove('hidden');
+        reserveTimeInput.classList.add('border-red-500');
+        reserveTimeInput.focus();
+        return null;
+      }
+
+      clearSessionActionError();
+      sessionActionError.textContent = 'Enter valid hours before continuing.';
+      return reserveTimeInput.value;
+    };
+
+    const reserveTable = () => {
+      const table = tables.find((item) => item.id === tableBeingStartedId);
+      const reserveTime = getValidReserveTime();
+
+      if (!table || reserveTime === null) {
+        return;
+      }
+
+      const displayTime = formatReserveTime(reserveTime);
+      table.status = 'Reserved';
+      table.reservation = `Reserved today at ${displayTime}`;
+      table.reserveDate = new Date().toISOString().slice(0, 10);
+      table.reserveTime = reserveTime;
+      delete table.elapsed;
+      delete table.charge;
+      delete table.startedAt;
+      delete table.sessionStartedAt;
+      delete table.durationMinutes;
+      delete table.durationSeconds;
+      delete table.availedHours;
+      delete table.finalPayment;
+      delete table.endedAt;
+      saveTables();
+      renderTables();
+      closeSessionActionModal();
+      showTableSuccess('Table Reserved', `${table.name} has been reserved today at ${displayTime}.`);
+    };
+
+    const openCancelReservationModal = (tableId) => {
+      const table = tables.find((item) => item.id === tableId);
+
+      if (!table || table.status !== 'Reserved') {
+        return;
+      }
+
+      tableBeingReservationCancelledId = tableId;
+      cancelReservationTableName.textContent = table.name;
+      showModal(cancelReservationModal);
+    };
+
+    const closeCancelReservationModal = () => {
+      hideModal(cancelReservationModal);
+      tableBeingReservationCancelledId = null;
+    };
+
+    const cancelTableReservation = () => {
+      const table = tables.find((item) => item.id === tableBeingReservationCancelledId);
+
+      if (!table || table.status !== 'Reserved') {
+        closeCancelReservationModal();
+        return;
+      }
+
+      table.status = 'Available';
+      delete table.reservation;
+      delete table.reserveDate;
+      delete table.reserveTime;
+      saveTables();
+      renderTables();
+      closeCancelReservationModal();
+      showTableSuccess('Reservation Cancelled', `${table.name} reservation has been cancelled.`);
+    };
+
+    const startTimedSession = () => {
+      const table = tables.find((item) => item.id === tableBeingStartedId);
+      const hours = getValidSessionHours(sessionHoursInput);
+
+      if (!table || hours === null) {
+        return;
+      }
+
+      const charge = Number(table.hourlyRate || 0) * hours;
+      const durationMinutes = Math.round(hours * 60);
+      table.status = 'In Use';
+      table.startedAt = Date.now();
+      table.sessionStartedAt = table.startedAt;
+      table.durationMinutes = durationMinutes;
+      table.durationSeconds = durationMinutes * 60;
+      table.availedHours = hours;
+      table.elapsed = formatDurationFromHours(hours);
+      table.charge = charge;
+      delete table.finalPayment;
+      delete table.endedAt;
+      delete table.reservation;
+      delete table.reserveDate;
+      delete table.reserveTime;
+      saveTables();
+      renderTables();
+      closeSessionActionModal();
+      showTableSuccess('Session Started', `${table.name} timer started for ${formatDurationFromMinutes(durationMinutes)} with a charge of P${formatHourlyRate(charge)}.`);
+    };
+
+    const openPauseConfirmModal = (tableId) => {
+      const table = tables.find((item) => item.id === tableId);
+
+      if (!table || table.status !== 'In Use') {
+        return;
+      }
+
+      tableBeingPausedId = tableId;
+      pauseConfirmTableName.textContent = table.name;
+      showModal(pauseConfirmModal);
+    };
+
+    const closePauseConfirmModal = () => {
+      hideModal(pauseConfirmModal);
+      tableBeingPausedId = null;
+    };
+
+    const pauseTableSession = () => {
+      const table = tables.find((item) => item.id === tableBeingPausedId);
+
+      if (!table || table.status !== 'In Use') {
+        closePauseConfirmModal();
+        return;
+      }
+
+      const remainingSeconds = getRemainingSessionSeconds(table);
+      const pausedRemainingSeconds = remainingSeconds === null ? 0 : remainingSeconds;
+      table.status = 'Paused';
+      table.pausedRemainingSeconds = pausedRemainingSeconds;
+      table.elapsed = formatClockFromSeconds(pausedRemainingSeconds);
+      delete table.startedAt;
+      delete table.durationSeconds;
+      saveTables();
+      renderTables();
+      closePauseConfirmModal();
+      showTableSuccess('Session Paused', `${table.name} has been paused at ${table.elapsed}.`);
+    };
+
+    const openResumeConfirmModal = (tableId) => {
+      const table = tables.find((item) => item.id === tableId);
+
+      if (!table || table.status !== 'Paused') {
+        return;
+      }
+
+      tableBeingResumedId = tableId;
+      resumeConfirmTableName.textContent = table.name;
+      showModal(resumeConfirmModal);
+    };
+
+    const closeResumeConfirmModal = () => {
+      hideModal(resumeConfirmModal);
+      tableBeingResumedId = null;
+    };
+
+    const resumeTableSession = () => {
+      const table = tables.find((item) => item.id === tableBeingResumedId);
+
+      if (!table || table.status !== 'Paused') {
+        closeResumeConfirmModal();
+        return;
+      }
+
+      const remainingSeconds = Number(table.pausedRemainingSeconds || 0);
+      table.status = 'In Use';
+      table.startedAt = Date.now();
+      table.sessionStartedAt = table.sessionStartedAt || table.startedAt;
+      table.durationMinutes = Math.max(1, Math.ceil(remainingSeconds / 60));
+      table.durationSeconds = remainingSeconds;
+      table.elapsed = formatClockFromSeconds(remainingSeconds);
+      delete table.pausedRemainingSeconds;
+      saveTables();
+      renderTables();
+      closeResumeConfirmModal();
+      showTableSuccess('Session Resumed', `${table.name} timer resumed with ${table.elapsed} remaining.`);
+    };
+
+    toggleSidebar.addEventListener('click', () => {
+      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      toggleSidebar.setAttribute('aria-expanded', String(!isCollapsed));
+    });
+
+    logoutButton.addEventListener('click', () => showModal(logoutModal));
+    cancelLogout.addEventListener('click', () => hideModal(logoutModal));
+    logoutModal.addEventListener('click', (event) => {
+      if (event.target === logoutModal) {
+        hideModal(logoutModal);
+      }
+    });
+
+    prevTables.addEventListener('click', () => setTablePage(currentTablePage - 1));
+    nextTables.addEventListener('click', () => setTablePage(currentTablePage + 1));
+    tablePageButtonsContainer.addEventListener('click', (event) => {
+      const pageButton = event.target.closest('.table-page-btn');
+      if (pageButton) {
+        setTablePage(Number(pageButton.dataset.page));
+      }
+    });
+    tableSearchInput.addEventListener('input', () => {
+      currentTablePage = 1;
+      renderTables();
+    });
+    tableStatusFilter.addEventListener('change', () => {
+      currentTablePage = 1;
+      renderTables();
+    });
+
+    addTableButton.addEventListener('click', openAddTableModal);
+    cancelAddTable.addEventListener('click', closeAddTableModal);
+    confirmAddTable.addEventListener('click', addTableCard);
+    addTableModal.addEventListener('click', (event) => {
+      if (event.target === addTableModal) {
+        closeAddTableModal();
+      }
+    });
+    closeAddTableError.addEventListener('click', () => hideModal(addTableErrorModal));
+    addTableErrorModal.addEventListener('click', (event) => {
+      if (event.target === addTableErrorModal) {
+        hideModal(addTableErrorModal);
+      }
+    });
+
+    tableGrid.addEventListener('click', (event) => {
+      const startButton = event.target.closest('.start-session-btn');
+      if (startButton) {
+        openSessionActionModal(startButton.dataset.tableId);
+        return;
+      }
+
+      const reservedDetailsButton = event.target.closest('.view-reserved-details-btn');
+      if (reservedDetailsButton) {
+        openSessionActionModal(reservedDetailsButton.dataset.tableId);
+        return;
+      }
+
+      const cancelReservationButton = event.target.closest('.cancel-reservation-btn');
+      if (cancelReservationButton) {
+        openCancelReservationModal(cancelReservationButton.dataset.tableId);
+        return;
+      }
+
+      const pauseButton = event.target.closest('.pause-session-btn');
+      if (pauseButton) {
+        openPauseConfirmModal(pauseButton.dataset.tableId);
+        return;
+      }
+
+      const resumeButton = event.target.closest('.resume-session-btn');
+      if (resumeButton) {
+        openResumeConfirmModal(resumeButton.dataset.tableId);
+        return;
+      }
+
+      const editButton = event.target.closest('.edit-table-btn');
+      if (editButton && !editButton.disabled) {
+        openEditTableModal(editButton.dataset.tableId);
+      }
+    });
+
+    newTableHourlyRate.addEventListener('input', () => {
+      hourlyRateError.classList.add('hidden');
+      newTableHourlyRate.classList.remove('border-red-500');
+    });
+    newTableHourlyRate.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        addTableCard();
+      }
+    });
+
+    cancelEditTable.addEventListener('click', closeEditTableModal);
+    changePriceButton.addEventListener('click', changeTablePrice);
+    deleteTableButton.addEventListener('click', openDeleteConfirmModal);
+    cancelDeleteTable.addEventListener('click', closeDeleteConfirmModal);
+    confirmDeleteTable.addEventListener('click', deleteTable);
+    editTableHourlyRate.addEventListener('input', () => {
+      editPriceError.classList.add('hidden');
+      editTableHourlyRate.classList.remove('border-red-500');
+    });
+    editTableHourlyRate.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        changeTablePrice();
+      }
+    });
+    editTableModal.addEventListener('click', (event) => {
+      if (event.target === editTableModal) {
+        closeEditTableModal();
+      }
+    });
+    deleteConfirmModal.addEventListener('click', (event) => {
+      if (event.target === deleteConfirmModal) {
+        closeDeleteConfirmModal();
+      }
+    });
+
+    reserveTableButton.addEventListener('click', reserveTable);
+    startTimedSessionButton.addEventListener('click', startTimedSession);
+    cancelSessionAction.addEventListener('click', closeSessionActionModal);
+    reserveTimeInput.addEventListener('input', clearSessionActionError);
+    sessionHoursInput.addEventListener('input', clearSessionActionError);
+    reserveTimeInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        reserveTable();
+      }
+    });
+    sessionHoursInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        startTimedSession();
+      }
+    });
+    sessionActionModal.addEventListener('click', (event) => {
+      if (event.target === sessionActionModal) {
+        closeSessionActionModal();
+      }
+    });
+    cancelCancelReservation.addEventListener('click', closeCancelReservationModal);
+    confirmCancelReservation.addEventListener('click', cancelTableReservation);
+    cancelReservationModal.addEventListener('click', (event) => {
+      if (event.target === cancelReservationModal) {
+        closeCancelReservationModal();
+      }
+    });
+    cancelPauseSession.addEventListener('click', closePauseConfirmModal);
+    confirmPauseSession.addEventListener('click', pauseTableSession);
+    pauseConfirmModal.addEventListener('click', (event) => {
+      if (event.target === pauseConfirmModal) {
+        closePauseConfirmModal();
+      }
+    });
+    cancelResumeSession.addEventListener('click', closeResumeConfirmModal);
+    confirmResumeSession.addEventListener('click', resumeTableSession);
+    resumeConfirmModal.addEventListener('click', (event) => {
+      if (event.target === resumeConfirmModal) {
+        closeResumeConfirmModal();
+      }
+    });
+    closeTableSuccess.addEventListener('click', () => hideModal(tableSuccessModal));
+    tableSuccessModal.addEventListener('click', (event) => {
+      if (event.target === tableSuccessModal) {
+        hideModal(tableSuccessModal);
+      }
+    });
+
+    loadTables();
+    renderTables();
+    setInterval(updateLiveSessionTimers, 1000);
+  </script>
+</body>
+</html>
