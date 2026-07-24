@@ -497,13 +497,13 @@
               <div class="flex justify-between gap-4"><span class="text-lap-muted">Rate per hour</span><strong id="billRate">P0.00</strong></div>
               <div class="flex justify-between gap-4"><span class="text-lap-muted">Hours availed</span><strong id="billHours">0 hrs</strong></div>
               <div class="flex justify-between gap-4"><span class="text-lap-muted">Session charges</span><strong id="billSessionCharges">P0.00</strong></div>
-              <div class="flex justify-between gap-4"><span class="text-lap-muted">Adjustments</span><strong id="billAdjustments">P0.00</strong></div>
+              <div class="flex justify-between gap-4"><span class="text-lap-muted">Additionals</span><strong id="billAdditionals">P0.00</strong></div>
               <div class="border-t border-lap-line pt-3 flex justify-between gap-4 text-lg"><span class="font-extrabold">Total</span><strong id="billTotal" class="text-lap-purple">P0.00</strong></div>
             </div>
 
             <div class="mt-5 grid gap-3">
               <button id="extendSelectedButton" class="cashier-extend-btn h-11 w-full rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition disabled:cursor-not-allowed disabled:opacity-40" type="button" disabled>Extend Time</button>
-              <button id="adjustSelectedButton" class="cashier-adjust-btn h-11 w-full rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition disabled:cursor-not-allowed disabled:opacity-40" type="button" disabled>Manual Adjustment</button>
+              <button id="additionalSelectedButton" class="cashier-adjust-btn h-11 w-full rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition disabled:cursor-not-allowed disabled:opacity-40" type="button" disabled>Additionals</button>
               <button id="endSelectedButton" class="cashier-bill-btn h-11 w-full rounded-xl border border-lap-purple/30 bg-lap-light text-sm font-bold text-lap-ink transition disabled:cursor-not-allowed disabled:opacity-40" type="button" disabled>End Session & Generate Bill</button>
             </div>
           </aside>
@@ -528,10 +528,12 @@
 
   <div id="extendModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="extendTitle">
     <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
-      <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
-        <i data-lucide="clock-plus" class="h-6 w-6"></i>
-      </span>
-      <h2 id="extendTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Extend Time</h2>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-lap-light text-lap-purple">
+          <i data-lucide="clock-plus" class="h-5 w-5"></i>
+        </span>
+        <h2 id="extendTitle" class="text-xl font-extrabold text-lap-ink">Extend Time</h2>
+      </div>
       <p class="mt-2 text-sm leading-6 text-lap-muted">Add more time to <strong id="extendSessionName" class="text-lap-ink"></strong>.</p>
       <label class="mt-5 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="extendHoursInput">Additional Hours</label>
       <input id="extendHoursInput" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-white px-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple" type="number" min="0.25" step="0.25" inputmode="decimal" value="1">
@@ -543,26 +545,56 @@
     </div>
   </div>
 
-  <div id="adjustModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="adjustTitle">
-    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
-      <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
-        <i data-lucide="receipt" class="h-6 w-6"></i>
-      </span>
-      <h2 id="adjustTitle" class="mt-5 text-xl font-extrabold text-lap-ink">Manual Adjustment</h2>
-      <p class="mt-2 text-sm leading-6 text-lap-muted">Add a discount or void with a required reason.</p>
-      <label class="mt-5 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="adjustType">Adjustment Type</label>
-      <select id="adjustType" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-white px-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple">
-        <option value="discount">Discount</option>
-        <option value="void">Void</option>
-      </select>
-      <label class="mt-4 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="adjustAmount">Amount</label>
-      <input id="adjustAmount" class="mt-2 h-12 w-full rounded-xl border border-lap-line bg-white px-4 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple" type="number" min="0" step="1" inputmode="decimal" value="0">
-      <label class="mt-4 block text-xs font-bold uppercase tracking-[.12em] text-lap-muted" for="adjustReason">Reason</label>
-      <textarea id="adjustReason" class="mt-2 min-h-24 w-full resize-none rounded-xl border border-lap-line bg-white px-4 py-3 text-sm font-semibold text-lap-ink outline-none transition focus:border-lap-purple" placeholder="Required reason"></textarea>
-      <p id="adjustError" class="mt-3 hidden text-xs font-semibold text-red-600">Enter an amount and reason before continuing.</p>
-      <div class="mt-6 grid grid-cols-2 gap-3">
-        <button id="cancelAdjust" class="h-11 rounded-xl border border-lap-line text-sm font-bold text-lap-ink transition hover:bg-lap-light" type="button">Cancel</button>
-        <button id="confirmAdjust" class="h-11 rounded-xl border border-lap-purple/30 bg-lap-light text-sm font-bold text-lap-ink transition hover:border-lap-purple hover:bg-white" type="button">Confirm</button>
+  <div id="additionalModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="additionalTitle">
+    <div class="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+              <i data-lucide="shopping-basket" class="h-5 w-5"></i>
+            </span>
+            <h2 id="additionalTitle" class="text-xl font-extrabold text-lap-ink">Additionals</h2>
+          </div>
+          <p class="mt-2 text-sm leading-6 text-lap-muted">Add Basic POS products to <strong id="additionalSessionName" class="text-lap-ink"></strong>.</p>
+        </div>
+        <button id="closeAdditional" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-lap-line text-lap-ink transition hover:bg-lap-light" type="button" aria-label="Close additionals">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-5 grid gap-5 lg:grid-cols-[1.35fr_.65fr]">
+        <section class="min-w-0">
+          <label class="flex h-11 items-center gap-3 rounded-xl border border-lap-line bg-[#F7F5F7] px-4 text-lap-muted" for="additionalProductSearch">
+            <i data-lucide="search" class="h-4 w-4"></i>
+            <input id="additionalProductSearch" class="w-full bg-transparent text-sm font-semibold text-lap-ink outline-none placeholder:text-lap-muted/60" type="search" placeholder="Search products...">
+          </label>
+          <div class="mt-4 max-h-[46vh] overflow-y-auto rounded-xl border border-lap-line">
+            <table class="w-full min-w-[520px] text-left text-sm">
+              <thead class="sticky top-0 bg-[#F7F5F7] text-xs uppercase tracking-[.12em] text-lap-muted">
+                <tr>
+                  <th class="px-4 py-3">Product</th>
+                  <th class="px-4 py-3">Price</th>
+                  <th class="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="additionalProductRows" class="divide-y divide-lap-line"></tbody>
+            </table>
+          </div>
+          <div id="emptyAdditionalProducts" class="mt-4 hidden rounded-xl border border-dashed border-lap-line p-5 text-center text-sm font-semibold text-lap-muted">No Basic POS products found.</div>
+        </section>
+
+        <aside class="flex h-[460px] min-w-0 flex-col rounded-xl border border-lap-line bg-[#F7F5F7] p-4 lg:h-[520px]">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="text-sm font-extrabold text-lap-ink">Current Order</h3>
+            <strong id="additionalOrderTotal" class="text-lap-purple">P0.00</strong>
+          </div>
+          <div id="additionalOrderItems" class="mt-3 min-h-0 flex-1 overflow-y-auto rounded-xl bg-white p-3 text-sm"></div>
+          <p id="additionalError" class="mt-3 hidden text-xs font-semibold text-red-600">Add at least one product before confirming.</p>
+          <div class="mt-auto grid grid-cols-2 gap-3 pt-4">
+            <button id="cancelAdditional" class="cashier-cancel-btn flex h-11 min-h-11 max-h-11 items-center justify-center rounded-xl border border-lap-line bg-white px-4 text-sm font-bold leading-none text-lap-ink transition" type="button">Cancel</button>
+            <button id="confirmAdditional" class="cashier-extend-btn flex h-11 min-h-11 max-h-11 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 text-sm font-bold leading-none text-lap-ink transition disabled:cursor-not-allowed disabled:opacity-40" type="button" disabled>Add to Bill</button>
+          </div>
+        </aside>
       </div>
     </div>
   </div>
@@ -595,6 +627,7 @@
     const BILLIARD_KEY = 'lapit_billiard_tables';
     const KARAOKE_KEY = 'lapit_videoke_rooms';
     const BILLS_KEY = 'lapit_cashier_bills';
+    const POS_PRODUCTS_KEY = 'lapit_pos_products_v2';
     const toggleSidebar = document.getElementById('toggleSidebar');
     const logoutButton = document.getElementById('logoutButton');
     const logoutModal = document.getElementById('logoutModal');
@@ -634,10 +667,10 @@
     const billRate = document.getElementById('billRate');
     const billHours = document.getElementById('billHours');
     const billSessionCharges = document.getElementById('billSessionCharges');
-    const billAdjustments = document.getElementById('billAdjustments');
+    const billAdditionals = document.getElementById('billAdditionals');
     const billTotal = document.getElementById('billTotal');
     const extendSelectedButton = document.getElementById('extendSelectedButton');
-    const adjustSelectedButton = document.getElementById('adjustSelectedButton');
+    const additionalSelectedButton = document.getElementById('additionalSelectedButton');
     const endSelectedButton = document.getElementById('endSelectedButton');
     const extendModal = document.getElementById('extendModal');
     const extendSessionName = document.getElementById('extendSessionName');
@@ -645,13 +678,17 @@
     const extendError = document.getElementById('extendError');
     const cancelExtend = document.getElementById('cancelExtend');
     const confirmExtend = document.getElementById('confirmExtend');
-    const adjustModal = document.getElementById('adjustModal');
-    const adjustType = document.getElementById('adjustType');
-    const adjustAmount = document.getElementById('adjustAmount');
-    const adjustReason = document.getElementById('adjustReason');
-    const adjustError = document.getElementById('adjustError');
-    const cancelAdjust = document.getElementById('cancelAdjust');
-    const confirmAdjust = document.getElementById('confirmAdjust');
+    const additionalModal = document.getElementById('additionalModal');
+    const additionalSessionName = document.getElementById('additionalSessionName');
+    const closeAdditional = document.getElementById('closeAdditional');
+    const additionalProductSearch = document.getElementById('additionalProductSearch');
+    const additionalProductRows = document.getElementById('additionalProductRows');
+    const emptyAdditionalProducts = document.getElementById('emptyAdditionalProducts');
+    const additionalOrderItems = document.getElementById('additionalOrderItems');
+    const additionalOrderTotal = document.getElementById('additionalOrderTotal');
+    const additionalError = document.getElementById('additionalError');
+    const cancelAdditional = document.getElementById('cancelAdditional');
+    const confirmAdditional = document.getElementById('confirmAdditional');
     const billModal = document.getElementById('billModal');
     const billSummary = document.getElementById('billSummary');
     const cancelBill = document.getElementById('cancelBill');
@@ -664,6 +701,8 @@
     let selectedSession = null;
     let billiardItems = [];
     let karaokeItems = [];
+    let posProducts = [];
+    let additionalOrder = [];
     let currentSessionsPage = 1;
     let pendingBill = null;
     const sessionsPerPage = 4;
@@ -749,6 +788,8 @@
       }
     };
 
+    const loadProducts = () => loadList(POS_PRODUCTS_KEY);
+
     const saveCurrentList = () => {
       localStorage.setItem(BILLIARD_KEY, JSON.stringify(billiardItems));
       localStorage.setItem(KARAOKE_KEY, JSON.stringify(karaokeItems));
@@ -776,6 +817,7 @@
             delete item.finalPayment;
             delete item.endedAt;
             delete item.adjustments;
+            delete item.additionals;
             delete item.extensions;
           }
         });
@@ -834,7 +876,10 @@
     const getAdjustmentTotal = (item) => (item.adjustments || [])
       .reduce((total, adjustment) => total + Number(adjustment.amount || 0), 0);
 
-    const getBillTotal = (item) => Math.max(0, getBaseCharge(item) - getAdjustmentTotal(item));
+    const getAdditionalTotal = (item) => (item.additionals || [])
+      .reduce((total, additional) => total + Number(additional.amount ?? (Number(additional.price || 0) * Number(additional.quantity || 0))), 0);
+
+    const getBillTotal = (item) => Math.max(0, getBaseCharge(item) + getAdditionalTotal(item) - getAdjustmentTotal(item));
 
     const getStatusClass = (status) => {
       if (status === 'In Use') return 'border-emerald-500/30 bg-emerald-50 text-emerald-600';
@@ -863,6 +908,7 @@
             delete item.finalPayment;
             delete item.endedAt;
             delete item.adjustments;
+            delete item.additionals;
             delete item.extensions;
             changed = true;
           }
@@ -898,12 +944,101 @@
       confirmExtend.classList.toggle('cursor-not-allowed', confirmExtend.disabled);
     };
 
-    const updateAdjustConfirmState = () => {
-      const amount = Number(adjustAmount.value);
-      const hasReason = adjustReason.value.trim().length > 0;
-      confirmAdjust.disabled = !Number.isFinite(amount) || amount <= 0 || !hasReason;
-      confirmAdjust.classList.toggle('opacity-40', confirmAdjust.disabled);
-      confirmAdjust.classList.toggle('cursor-not-allowed', confirmAdjust.disabled);
+    const getAdditionalOrderTotal = () => additionalOrder
+      .reduce((total, item) => total + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+
+    const getVisibleProducts = () => {
+      const query = additionalProductSearch.value.trim().toLowerCase();
+      return posProducts.filter((product) => !query || String(product.name || '').toLowerCase().includes(query));
+    };
+
+    const updateAdditionalConfirmState = () => {
+      confirmAdditional.disabled = additionalOrder.length === 0;
+      confirmAdditional.classList.toggle('opacity-40', confirmAdditional.disabled);
+      confirmAdditional.classList.toggle('cursor-not-allowed', confirmAdditional.disabled);
+    };
+
+    const renderAdditionalProducts = () => {
+      const visibleProducts = getVisibleProducts();
+      additionalProductRows.innerHTML = '';
+      emptyAdditionalProducts.classList.toggle('hidden', visibleProducts.length > 0);
+
+      visibleProducts.forEach((product) => {
+        const row = document.createElement('tr');
+        row.className = 'transition hover:bg-slate-50';
+        row.innerHTML = `
+          <td class="px-4 py-4">
+            <strong class="block max-w-[220px] truncate text-lap-ink sm:max-w-none">${escapeHtml(product.name)}</strong>
+            <span class="text-xs text-lap-muted">Basic POS product</span>
+          </td>
+          <td class="px-4 py-4 font-extrabold text-lap-purple">${formatMoney(product.price)}</td>
+          <td class="px-4 py-4 text-right">
+            <button class="add-additional-product rounded-xl border border-lap-purple/30 bg-lap-light px-4 py-2 text-xs font-bold text-lap-ink transition hover:border-lap-purple hover:bg-white" type="button" data-product-id="${escapeHtml(product.id)}">Add</button>
+          </td>
+        `;
+        additionalProductRows.appendChild(row);
+      });
+
+      lucide.createIcons();
+    };
+
+    const renderAdditionalOrder = () => {
+      if (!additionalOrder.length) {
+        additionalOrderItems.innerHTML = '<p class="text-sm text-lap-muted">No items added yet.</p>';
+        additionalOrderTotal.textContent = formatMoney(0);
+        updateAdditionalConfirmState();
+        return;
+      }
+
+      additionalOrderItems.innerHTML = additionalOrder.map((item) => `
+        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-lap-line/70 py-2 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <span class="min-w-0 truncate text-sm font-semibold text-lap-ink">${escapeHtml(item.name)} <small class="font-medium text-lap-muted">${formatMoney(item.price)}</small></span>
+          <div class="inline-flex h-8 items-center overflow-hidden rounded-md border border-lap-line bg-white">
+            <button class="additional-qty-btn h-8 w-8 text-xs font-extrabold text-lap-ink transition hover:bg-slate-100" type="button" data-order-action="decrease" data-product-id="${escapeHtml(item.id)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">-</button>
+            <span class="inline-flex h-8 min-w-8 items-center justify-center border-x border-lap-line px-2 text-xs font-extrabold text-lap-ink">${item.quantity}</span>
+            <button class="additional-qty-btn h-8 w-8 text-xs font-extrabold text-lap-ink transition hover:bg-slate-100" type="button" data-order-action="increase" data-product-id="${escapeHtml(item.id)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button>
+          </div>
+          <strong class="col-span-2 text-right text-sm sm:col-span-1">${formatMoney(item.price * item.quantity)}</strong>
+        </div>
+      `).join('');
+
+      additionalOrderTotal.textContent = formatMoney(getAdditionalOrderTotal());
+      additionalError.classList.add('hidden');
+      updateAdditionalConfirmState();
+    };
+
+    const addAdditionalToOrder = (productId) => {
+      const product = posProducts.find((item) => item.id === productId);
+      if (!product) return;
+
+      const existing = additionalOrder.find((item) => item.id === productId);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        additionalOrder.push({
+          id: product.id,
+          name: product.name,
+          price: Number(product.price || 0),
+          quantity: 1
+        });
+      }
+      renderAdditionalOrder();
+    };
+
+    const changeAdditionalQuantity = (productId, action) => {
+      const item = additionalOrder.find((entry) => entry.id === productId);
+      if (!item) return;
+
+      if (action === 'increase') {
+        item.quantity += 1;
+      } else {
+        item.quantity -= 1;
+        if (item.quantity <= 0) {
+          additionalOrder = additionalOrder.filter((entry) => entry.id !== productId);
+        }
+      }
+
+      renderAdditionalOrder();
     };
 
     const setSelectedSession = (type, id) => {
@@ -1014,7 +1149,7 @@
         billRate.textContent = 'P0.00';
         billHours.textContent = '0 hrs';
         billSessionCharges.textContent = 'P0.00';
-        billAdjustments.textContent = 'P0.00';
+        billAdditionals.textContent = 'P0.00';
         billTotal.textContent = 'P0.00';
       } else {
         selectedSessionLabel.textContent = `${item.name} - ${selectedSession.type === 'billiard' ? 'Billiard Table' : 'Karaoke Room'}`;
@@ -1023,12 +1158,12 @@
         billRate.textContent = `${formatMoney(item.hourlyRate || 0)}/hr`;
         billHours.textContent = formatHours(item.availedHours || 0);
         billSessionCharges.textContent = formatMoney(getBaseCharge(item));
-        billAdjustments.textContent = `-${formatMoney(getAdjustmentTotal(item))}`;
+        billAdditionals.textContent = formatMoney(getAdditionalTotal(item));
         billTotal.textContent = formatMoney(getBillTotal(item));
       }
 
       extendSelectedButton.disabled = !canExtend;
-      adjustSelectedButton.disabled = !canManage;
+      additionalSelectedButton.disabled = !canManage;
       endSelectedButton.disabled = !canManage;
     };
 
@@ -1102,54 +1237,64 @@
       showSuccess('Time Extended', `${item.name} has been extended by ${formatHours(hours)}.`);
     };
 
-    const openAdjustModal = (id) => {
+    const openAdditionalModal = (id) => {
       setSelectedSession(currentView, id);
       const item = getSelectedItem();
 
       if (!item || !['In Use', 'Paused'].includes(item.status)) return;
 
-      adjustType.value = 'discount';
-      adjustAmount.value = '0';
-      adjustReason.value = '';
-      adjustError.classList.add('hidden');
-      adjustAmount.classList.remove('border-red-500');
-      adjustReason.classList.remove('border-red-500');
-      updateAdjustConfirmState();
-      showModal(adjustModal);
-      adjustAmount.focus();
-      adjustAmount.select();
+      posProducts = loadProducts();
+      additionalOrder = [];
+      additionalSessionName.textContent = item.name;
+      additionalProductSearch.value = '';
+      additionalError.classList.add('hidden');
+      renderAdditionalProducts();
+      renderAdditionalOrder();
+      showModal(additionalModal);
+      additionalProductSearch.focus();
     };
 
-    const confirmAdjustment = () => {
+    const confirmAdditionals = () => {
       const item = getSelectedItem();
-      const amount = Number(adjustAmount.value);
-      const reason = adjustReason.value.trim();
 
       if (!item || !['In Use', 'Paused'].includes(item.status)) {
-        hideModal(adjustModal);
+        hideModal(additionalModal);
         return;
       }
 
-      if (!Number.isFinite(amount) || amount <= 0 || !reason) {
-        adjustError.classList.remove('hidden');
-        adjustAmount.classList.toggle('border-red-500', !Number.isFinite(amount) || amount <= 0);
-        adjustReason.classList.toggle('border-red-500', !reason);
-        updateAdjustConfirmState();
+      if (!additionalOrder.length) {
+        additionalError.classList.remove('hidden');
+        updateAdditionalConfirmState();
         return;
       }
 
-      item.adjustments = Array.isArray(item.adjustments) ? item.adjustments : [];
-      item.adjustments.push({
-        type: adjustType.value,
-        amount,
-        reason,
-        createdAt: Date.now()
+      const addedAt = Date.now();
+      item.additionals = Array.isArray(item.additionals) ? item.additionals : [];
+      additionalOrder.forEach((orderedItem) => {
+        const existing = item.additionals.find((entry) => entry.id === orderedItem.id && Number(entry.price || 0) === Number(orderedItem.price || 0));
+        if (existing) {
+          existing.quantity = Number(existing.quantity || 0) + Number(orderedItem.quantity || 0);
+          existing.amount = Number(existing.price || 0) * Number(existing.quantity || 0);
+          existing.updatedAt = addedAt;
+          return;
+        }
+
+        item.additionals.push({
+          id: orderedItem.id,
+          name: orderedItem.name,
+          price: Number(orderedItem.price || 0),
+          quantity: Number(orderedItem.quantity || 0),
+          amount: Number(orderedItem.price || 0) * Number(orderedItem.quantity || 0),
+          addedAt
+        });
       });
       item.finalPayment = getBillTotal(item);
       saveCurrentList();
-      hideModal(adjustModal);
+      const addedTotal = getAdditionalOrderTotal();
+      additionalOrder = [];
+      hideModal(additionalModal);
       render();
-      showSuccess('Adjustment Added', `${adjustType.value === 'discount' ? 'Discount' : 'Void'} of ${formatMoney(amount)} was added to ${item.name}.`);
+      showSuccess('Additionals Added', `${formatMoney(addedTotal)} in products was added to ${item.name}.`);
     };
 
     const openEndSessionModal = (id) => {
@@ -1175,6 +1320,7 @@
         endedAt: Date.now(),
         extensions: item.extensions || [],
         sessionCharges: getBaseCharge(item),
+        additionals: item.additionals || [],
         adjustments: item.adjustments || [],
         total: getBillTotal(item),
         createdAt: Date.now()
@@ -1211,6 +1357,7 @@
       delete item.finalPayment;
       delete item.endedAt;
       delete item.adjustments;
+      delete item.additionals;
       delete item.extensions;
       saveCurrentList();
       hideModal(billModal);
@@ -1224,7 +1371,9 @@
       const extendedHours = bill.extensions.reduce((total, extension) => total + Number(extension.hours || 0), 0);
       const baseHours = Math.max(0, Number(bill.hours || 0) - extendedHours);
       const computedTotalCharge = Number(bill.rate || 0) * (baseHours + extendedHours);
-      const computedAmountDue = Math.max(0, computedTotalCharge - bill.adjustments.reduce((total, adjustment) => total + Number(adjustment.amount || 0), 0));
+      const additionals = bill.additionals || [];
+      const additionalTotal = additionals.reduce((total, item) => total + Number(item.amount ?? (Number(item.price || 0) * Number(item.quantity || 0))), 0);
+      const computedAmountDue = Math.max(0, computedTotalCharge + additionalTotal - bill.adjustments.reduce((total, adjustment) => total + Number(adjustment.amount || 0), 0));
       const extensionRows = bill.extensions.length
         ? bill.extensions.map((extension, index) => `
             <div class="flex justify-between gap-3 py-1">
@@ -1242,6 +1391,15 @@
             </div>
           `).join('')
         : '<p class="py-1 text-xs text-lap-muted">No manual adjustments.</p>';
+
+      const additionalRows = additionals.length
+        ? additionals.map((item) => `
+            <div class="flex justify-between gap-3 py-1">
+              <span class="text-lap-muted">${escapeHtml(item.name)} x${Number(item.quantity || 0)}<br><small>${formatMoney(item.price)} each</small></span>
+              <strong>${formatMoney(item.amount ?? (Number(item.price || 0) * Number(item.quantity || 0)))}</strong>
+            </div>
+          `).join('')
+        : '<p class="py-1 text-xs text-lap-muted">No additionals ordered.</p>';
 
       billSummary.innerHTML = `
         <div class="flex items-start justify-between gap-4">
@@ -1292,9 +1450,20 @@
         </div>
 
         <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
-          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Adjustments</strong>
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Additionals</strong>
+          <div>${additionalRows}</div>
+          <div class="mt-1 flex justify-between gap-4 border-t border-dashed border-lap-line pt-2">
+            <span class="font-bold text-lap-ink">Additionals Total</span>
+            <strong>${formatMoney(additionalTotal)}</strong>
+          </div>
+        </div>
+
+        ${bill.adjustments.length ? `
+        <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Legacy Adjustments</strong>
           <div>${adjustmentRows}</div>
         </div>
+        ` : ''}
 
         <div class="mt-3 flex justify-between gap-4 border-t border-lap-line pt-3 text-lg">
           <span class="font-extrabold text-lap-ink">Amount Due</span>
@@ -1393,8 +1562,8 @@
     extendSelectedButton.addEventListener('click', () => {
       if (selectedSession) openExtendModal(selectedSession.id);
     });
-    adjustSelectedButton.addEventListener('click', () => {
-      if (selectedSession) openAdjustModal(selectedSession.id);
+    additionalSelectedButton.addEventListener('click', () => {
+      if (selectedSession) openAdditionalModal(selectedSession.id);
     });
     endSelectedButton.addEventListener('click', () => {
       if (selectedSession) openEndSessionModal(selectedSession.id);
@@ -1406,18 +1575,18 @@
       extendHoursInput.classList.remove('border-red-500');
       updateExtendConfirmState();
     });
-    cancelAdjust.addEventListener('click', () => hideModal(adjustModal));
-    confirmAdjust.addEventListener('click', confirmAdjustment);
-    adjustAmount.addEventListener('input', () => {
-      adjustError.classList.add('hidden');
-      adjustAmount.classList.remove('border-red-500');
-      updateAdjustConfirmState();
+    additionalProductSearch.addEventListener('input', renderAdditionalProducts);
+    additionalProductRows.addEventListener('click', (event) => {
+      const addButton = event.target.closest('.add-additional-product');
+      if (addButton) addAdditionalToOrder(addButton.dataset.productId);
     });
-    adjustReason.addEventListener('input', () => {
-      adjustError.classList.add('hidden');
-      adjustReason.classList.remove('border-red-500');
-      updateAdjustConfirmState();
+    additionalOrderItems.addEventListener('click', (event) => {
+      const button = event.target.closest('.additional-qty-btn');
+      if (button) changeAdditionalQuantity(button.dataset.productId, button.dataset.orderAction);
     });
+    closeAdditional.addEventListener('click', () => hideModal(additionalModal));
+    cancelAdditional.addEventListener('click', () => hideModal(additionalModal));
+    confirmAdditional.addEventListener('click', confirmAdditionals);
     cancelBill.addEventListener('click', () => {
       pendingBill = null;
       hideModal(billModal);
@@ -1425,7 +1594,7 @@
     proceedBill.addEventListener('click', generateSelectedBill);
     closeSuccess.addEventListener('click', () => hideModal(successModal));
 
-    [extendModal, adjustModal, billModal, successModal].forEach((modal) => {
+    [extendModal, additionalModal, billModal, successModal].forEach((modal) => {
       modal.addEventListener('click', (event) => {
         if (event.target === modal) {
           if (modal === billModal) {

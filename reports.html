@@ -598,7 +598,9 @@
     const getExtendedHours = (bill) => (bill.extensions || []).reduce((sum, item) => sum + Number(item.hours || 0), 0);
     const getExtensionAmount = (bill) => (bill.extensions || []).reduce((sum, item) => sum + Number(item.amount || (Number(item.hours || 0) * Number(bill.rate || 0))), 0);
     const getAdjustmentTotal = (bill) => (bill.adjustments || []).reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    const getBillTotal = (bill) => Number(bill.total ?? ((Number(bill.sessionCharges || 0) + getExtensionAmount(bill)) - getAdjustmentTotal(bill)));
+    const getAdditionalTotal = (bill) => (bill.additionals || [])
+      .reduce((sum, item) => sum + Number(item.amount ?? (Number(item.price || 0) * Number(item.quantity || 0))), 0);
+    const getBillTotal = (bill) => Number(bill.total ?? ((Number(bill.sessionCharges || 0) + getExtensionAmount(bill) + getAdditionalTotal(bill)) - getAdjustmentTotal(bill)));
     const getReceiptNumber = (bill) => {
       const createdAt = Number(bill.createdAt || bill.endedAt || Date.now());
       const shortId = String(bill.id || createdAt).replace(/\D/g, '').slice(-4).padStart(4, '0');
@@ -724,10 +726,12 @@
 
       const extensions = bill.extensions || [];
       const adjustments = bill.adjustments || [];
+      const additionals = bill.additionals || [];
       const extendedHours = extensions.reduce((total, extension) => total + Number(extension.hours || 0), 0);
       const baseHours = Math.max(0, Number(bill.hours || 0) - extendedHours);
       const computedTotalCharge = Number(bill.rate || 0) * (baseHours + extendedHours);
-      const computedAmountDue = Math.max(0, computedTotalCharge - adjustments.reduce((total, adjustment) => total + Number(adjustment.amount || 0), 0));
+      const additionalTotal = getAdditionalTotal(bill);
+      const computedAmountDue = Math.max(0, computedTotalCharge + additionalTotal - adjustments.reduce((total, adjustment) => total + Number(adjustment.amount || 0), 0));
       const extensionRows = extensions.length
         ? extensions.map((extension) => `
             <div class="flex justify-between gap-3 py-1">
@@ -745,6 +749,15 @@
           </div>
         `).join('')
         : '<p class="py-1 text-xs text-lap-muted">No manual adjustments.</p>';
+
+      const additionalRows = additionals.length
+        ? additionals.map((item) => `
+          <div class="flex justify-between gap-3 py-1">
+            <span class="text-lap-muted">${escapeHtml(item.name)} x${Number(item.quantity || 0)}<br><small>${formatMoney(item.price)} each</small></span>
+            <strong>${formatMoney(item.amount ?? (Number(item.price || 0) * Number(item.quantity || 0)))}</strong>
+          </div>
+        `).join('')
+        : '<p class="py-1 text-xs text-lap-muted">No additionals ordered.</p>';
 
       receiptContent.innerHTML = `
         <div class="flex items-start justify-between gap-4">
@@ -795,9 +808,20 @@
         </div>
 
         <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
-          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Adjustments</strong>
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Additionals</strong>
+          <div>${additionalRows}</div>
+          <div class="mt-1 flex justify-between gap-4 border-t border-dashed border-lap-line pt-2">
+            <span class="font-bold text-lap-ink">Additionals Total</span>
+            <strong>${formatMoney(additionalTotal)}</strong>
+          </div>
+        </div>
+
+        ${adjustments.length ? `
+        <div class="mt-2 border-t border-dashed border-lap-line pt-2 text-xs">
+          <strong class="text-[11px] uppercase tracking-[.14em] text-lap-muted">Legacy Adjustments</strong>
           <div>${adjustmentRows}</div>
         </div>
+        ` : ''}
 
         <div class="mt-3 flex justify-between gap-4 border-t border-lap-line pt-3 text-lg">
           <span class="font-extrabold text-lap-ink">Amount Due</span>
@@ -834,12 +858,14 @@
       const rate = Number(bill.rate || 0);
       const extensions = bill.extensions || [];
       const adjustments = bill.adjustments || [];
+      const additionals = bill.additionals || [];
       const extendedHours = getExtendedHours(bill);
       const baseHours = Math.max(0, Number(bill.hours || 0) - extendedHours);
       const availedAmount = rate * baseHours;
       const extendedAmount = rate * extendedHours;
       const totalCharge = availedAmount + extendedAmount;
-      const amountDue = Math.max(0, totalCharge - getAdjustmentTotal(bill));
+      const additionalTotal = getAdditionalTotal(bill);
+      const amountDue = Math.max(0, totalCharge + additionalTotal - getAdjustmentTotal(bill));
       const receiptNumber = getReceiptNumber(bill);
       let y = 18;
 
@@ -940,18 +966,31 @@
       y += 3;
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
-      doc.text('Adjustments', 18, y);
+      doc.text('Additionals', 18, y);
       y += 8;
       doc.setFontSize(10);
+      if (additionals.length) {
+        additionals.forEach((item) => {
+          y = addPdfLine(doc, `${item.name} x${Number(item.quantity || 0)}`, formatMoney(item.amount ?? (Number(item.price || 0) * Number(item.quantity || 0))), y);
+        });
+        y = addPdfLine(doc, 'Additionals Total', formatMoney(additionalTotal), y, { bold: true });
+      } else {
+        doc.setFont('helvetica', 'normal');
+        doc.text('No additionals ordered.', 18, y);
+        y += 8;
+      }
+
       if (adjustments.length) {
+        y += 3;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('Legacy Adjustments', 18, y);
+        y += 8;
+        doc.setFontSize(10);
         adjustments.forEach((adjustment) => {
           const label = `${adjustment.type || 'Adjustment'} - ${adjustment.reason || 'No reason'}`;
           y = addPdfLine(doc, label, `-${formatMoney(adjustment.amount)}`, y);
         });
-      } else {
-        doc.setFont('helvetica', 'normal');
-        doc.text('No manual adjustments.', 18, y);
-        y += 8;
       }
 
       y += 6;
