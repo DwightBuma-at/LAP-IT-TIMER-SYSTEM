@@ -132,6 +132,34 @@
       flex-shrink: 0;
     }
 
+    .mobile-sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      border: 0;
+      background: rgba(5, 5, 5, .38);
+      backdrop-filter: blur(2px);
+    }
+
+    @media (max-width: 767px) {
+      .admin-main,
+      body.sidebar-collapsed .admin-main {
+        padding-left: 0 !important;
+      }
+
+      body.mobile-sidebar-open .admin-sidebar {
+        display: flex !important;
+        width: min(82vw, 280px);
+        max-width: 280px;
+        z-index: 50;
+      }
+
+      body.mobile-sidebar-open .mobile-sidebar-backdrop {
+        display: block;
+      }
+    }
+
     .logout-dialog,
     .logout-dialog h2,
     .logout-dialog p,
@@ -669,6 +697,23 @@
     const logoutButton = document.getElementById('logoutButton');
     const logoutModal = document.getElementById('logoutModal');
     const cancelLogout = document.getElementById('cancelLogout');
+    const mobileMenuButton = document.querySelector('button[aria-label="Open menu"]');
+    const mobileSidebarBackdrop = document.createElement('button');
+    mobileSidebarBackdrop.className = 'mobile-sidebar-backdrop';
+    mobileSidebarBackdrop.type = 'button';
+    mobileSidebarBackdrop.setAttribute('aria-label', 'Close menu');
+    document.body.appendChild(mobileSidebarBackdrop);
+
+    const openMobileSidebar = () => {
+      document.body.classList.remove('sidebar-collapsed');
+      document.body.classList.add('mobile-sidebar-open');
+      mobileMenuButton?.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeMobileSidebar = () => {
+      document.body.classList.remove('mobile-sidebar-open');
+      mobileMenuButton?.setAttribute('aria-expanded', 'false');
+    };
     const billiardDate = document.getElementById('billiardDate');
     const tableGrid = document.getElementById('tableGrid');
     const tablePageButtonsContainer = document.getElementById('tablePageButtons');
@@ -1516,6 +1561,15 @@
       closeResumeConfirmModal();
       showTableSuccess('Session Resumed', `${table.name} timer resumed with ${table.elapsed} remaining.`);
     };
+
+    mobileMenuButton?.addEventListener('click', openMobileSidebar);
+    mobileSidebarBackdrop.addEventListener('click', closeMobileSidebar);
+    document.querySelectorAll('#adminSidebar a').forEach((link) => {
+      link.addEventListener('click', closeMobileSidebar);
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768) closeMobileSidebar();
+    });
 
     toggleSidebar.addEventListener('click', () => {
       const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
