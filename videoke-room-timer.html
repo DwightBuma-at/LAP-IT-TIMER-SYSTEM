@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      const AUTH_KEY = 'lapit_admin_authenticated';
+      const REDIRECT_KEY = 'lapit_auth_redirect';
+
+      if (sessionStorage.getItem(AUTH_KEY) !== 'true') {
+        document.documentElement.style.visibility = 'hidden';
+        const attemptedPage = `${window.location.pathname.split('/').pop() || 'billiard-table-timer.html'}${window.location.search}${window.location.hash}`;
+        sessionStorage.setItem(REDIRECT_KEY, attemptedPage);
+        window.location.replace('./?login=required');
+      }
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LAP IT | Videoke Room Timer</title>
@@ -1742,6 +1755,8 @@
   <script src="auth-guard.js"></script>
 </body>
 </html>
+
+
 
 
 
